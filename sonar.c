@@ -39,6 +39,7 @@ void SonarConfig()
     GPIO_PORTB_AFSEL_R |= 0b00001000;
     GPIO_PORTB_PCTL_R |= 0x7000;
 
+    SYSCTL_RCGCTIMER_R |= 0b1000;
     TIMER3_IMR_R &= 0xBFF;
     TIMER3_CTL_R &= 0xEFF;
     TIMER3_CFG_R = 0x4;
