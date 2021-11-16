@@ -5,30 +5,29 @@
  *      Author: wclemms
  */
 
-#include "mission.h"
-
+#include "adc.h"
+#include "button.h"
+#include "lcd.h"
+#include "servo.h"
+#include "sonar.h"
+#include "Timer.h"
+#include "open_interface.h"
+#include "files_for_alarm/movement.h"
+#include "files_for_alarm/uart.h"
+#include "files_for_alarm/distancesensor.h"
+#include "files_for_alarm/botconfig.h"
 
 
 int main(void)
- {
-    //TODO figure out why we can't remove cyBOT_Scan
-    cyBOT_init_Scan();
-    lcd_init();
-    uart_init();
+{
     adc_init();
-    ServoInit();
     button_init();
+    lcd_init();
+    ServoInit();
+    timer_init();
+    uart_init(115200);
 
-    rightValue = 50856;
-    leftValue = 22106;
 
-//    ServoConfigure(); //used for configureation
+    oi_t* interface = oi_alloc();
 
-
-    do
-    {
-        ResetServo();
-        Mission();
-    } while(contact == true);
-    return 0;
 }

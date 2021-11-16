@@ -16,9 +16,9 @@ extern volatile char data_received;
 #include "distancesensor.h"
 #include "botconfig.h"
 #include "stdarg.h"
-#include "calibration.h"
+//#include "calibration.h"
 #include "servo.h"
-#include "ping.h"
+#include "sonar.h"
 
 
 //#define convert_raw_ir_to_distance(raw) ((double) CYBOT_BASE * (double) pow((double) raw, (double) CYBOT_EXP))
@@ -45,7 +45,7 @@ void our_scan(cyBOT_Scan_t * scan) {
 // if USEDEBUG DATA is true than it will use the sample data instead of making new scans
 #define DEBUGTHIS 0
 #ifdef DEBUGTHIS
-#include "testdata.h"
+//#include "testdata.h"
 #endif
 
 //NSCANS is the size of all_scans, ACTUALNSCANS is the actual number of scans done of that 180
@@ -350,13 +350,6 @@ char refined_scan180(scanned_obj *objarray)
             // _SCAN(ANGLE_FRM_SCAN(i), &all_scans[i]);
             all_scans[i].IR_raw_val = (int) averaged_ir_value;
             all_scans[i].sound_dist = temp.sound_dist;
-        }
-    }
-    else
-    {
-        for (i = 0; i < 180; i++)
-        {
-            all_scans[i] = sample_scans[i];
         }
     }
     output_scan_data();

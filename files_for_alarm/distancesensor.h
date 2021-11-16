@@ -29,6 +29,7 @@ typedef struct
     float straight_width;
     int scan_direction;
 } scanned_obj;
+
 typedef struct {
     //start angle
     int angle;
