@@ -17,7 +17,7 @@ void ServoInit()
     GPIO_PORTB_DEN_R |= 0b00100000;
     GPIO_PORTB_DIR_R |= 0b00100000;
     GPIO_PORTB_AFSEL_R |= 0b00100000;
-    GPIO_PORTB_PCTL_R |= 0x7000;
+    GPIO_PORTB_PCTL_R |= 0x7000; //overides i^2C module of PB3
 
     SYSCTL_RCGCTIMER_R |= 0b10;
     TIMER1_CTL_R &= 0xEFF;

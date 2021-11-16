@@ -22,8 +22,7 @@ C_SRCS += \
 ../open_interface.c \
 ../servo.c \
 ../sonar.c \
-../tm4c123gh6pm_startup_ccs.c \
-../uart.c 
+../tm4c123gh6pm_startup_ccs.c 
 
 C_DEPS += \
 ./Timer.d \
@@ -35,8 +34,7 @@ C_DEPS += \
 ./open_interface.d \
 ./servo.d \
 ./sonar.d \
-./tm4c123gh6pm_startup_ccs.d \
-./uart.d 
+./tm4c123gh6pm_startup_ccs.d 
 
 OBJS += \
 ./Timer.obj \
@@ -48,8 +46,7 @@ OBJS += \
 ./open_interface.obj \
 ./servo.obj \
 ./sonar.obj \
-./tm4c123gh6pm_startup_ccs.obj \
-./uart.obj 
+./tm4c123gh6pm_startup_ccs.obj 
 
 OBJS__QUOTED += \
 "Timer.obj" \
@@ -61,8 +58,7 @@ OBJS__QUOTED += \
 "open_interface.obj" \
 "servo.obj" \
 "sonar.obj" \
-"tm4c123gh6pm_startup_ccs.obj" \
-"uart.obj" 
+"tm4c123gh6pm_startup_ccs.obj" 
 
 C_DEPS__QUOTED += \
 "Timer.d" \
@@ -74,8 +70,7 @@ C_DEPS__QUOTED += \
 "open_interface.d" \
 "servo.d" \
 "sonar.d" \
-"tm4c123gh6pm_startup_ccs.d" \
-"uart.d" 
+"tm4c123gh6pm_startup_ccs.d" 
 
 C_SRCS__QUOTED += \
 "../Timer.c" \
@@ -87,7 +82,6 @@ C_SRCS__QUOTED += \
 "../open_interface.c" \
 "../servo.c" \
 "../sonar.c" \
-"../tm4c123gh6pm_startup_ccs.c" \
-"../uart.c" 
+"../tm4c123gh6pm_startup_ccs.c" 
 
 

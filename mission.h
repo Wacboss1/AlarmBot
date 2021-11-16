@@ -11,12 +11,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <WMuart.h>
 
 #include "open_interface.h"
 #include "Timer.h"
 #include "lcd.h"
 #include "movement.h"
-#include "uart.h"
 #include "adc.h"
 #include "sonar.h"
 #include "servo.h"

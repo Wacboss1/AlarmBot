@@ -1,15 +1,9 @@
 /*
-*
-*   uart.h
-*
-*   Used to set up the UART
-*   uses UART1 at 115200
-*
-*
-*   @author Dane Larson
-*   @date 07/18/2016
-*   Phillip Jones updated 9/2019, removed WiFi.h
-*/
+ * uart.h
+ *
+ *  Created on: Nov 16, 2021
+ *      Author: wclemms
+ */
 
 #ifndef UART_H_
 #define UART_H_
@@ -26,5 +20,6 @@ char uart_receive(void);
 void uart_sendStr(const char *data);
 
 void UART1_Handler(void);
+
 
 #endif /* UART_H_ */
