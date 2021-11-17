@@ -28,5 +28,10 @@ int main(void)
     uart_init(115200);
     oi_t* interface = oi_alloc();
     oi_init(interface);
-    move_specific_distance(interface, 20);
+
+    //move forward while scanning periodically
+    //if there is an tall object in range
+        //if we would hit it by driving forward
+            //navigate to/around it
+
 }
