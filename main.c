@@ -26,8 +26,7 @@ int main(void)
     ServoInit();
     timer_init();
     uart_init(115200);
-
-
     oi_t* interface = oi_alloc();
-
+    oi_init(interface);
+    move_specific_distance(interface, 20);
 }
