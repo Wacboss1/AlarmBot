@@ -21,12 +21,71 @@ void move_around_obstacle(oi_t *sensor, char leftBumper, char rightBumper);
 //speed of left wheel
 #define TURNING_BKWD_SPD (-150 * POWER_OFFSET)
 
-void move_specific_distance(oi_t *sensor, int centimeters)
+
+#define CLIFFFRONTLEFT 0x1
+#define CLIFFLEFT 0x2
+#define CLIFFFRONTRIGHT 0x4
+#define CLIFFRIGHT 0x8
+#define FRONT_CLIFF_HIT (CLIFFFRONTLEFT || CLIFFFRONTRIGHT)
+#define BOTHRIGHT 0xD
+#define BOTHFRONT 0x5
+#define BOTHLEFT 0x3
+
+typedef struct movement_data{
+    double x;
+    double y;
+    int rotation;
+    double target_x;
+    double target_y;
+    double waypoint_x;
+    double waypoint_y;
+
+} move_data;
+
+void move_distance(oi_t *sensor, move_data * bot_data);
+
+
+int detect_cliff(oi_t * sensor) {
+    int return_value=0;
+    if (sensor->cliffLeft) {
+           return_value|=CLIFFLEFT;
+    }
+    if (sensor->cliffFrontLeft) {
+        return_value|=CLIFFFRONTLEFT;
+
+    }
+     if (sensor->cliffRight) {
+         return_value|=CLIFFRIGHT;
+
+    }
+    else if (sensor->cliffFrontRight) {
+        return_value|=CLIFFFRONTRIGHT;
+
+    }
+    return return_value;
+
+}
+
+/////this one is used by user
+///it calls move_distance after instantiating a bot_data with the target y value
+////
+void move_specific_distance(oi_t *sensor, int centimeters) {
+
+    //Use a sensor to move a specific distance, in cm
+    move_data bot_data = {0,0,0,centimeters};
+    move_distance(sensor, &bot_data);
+
+}
+
+///this one is not in header file and handles a simple move
+//does not check any sensors for any danger or nothin
+void move_distance(oi_t *sensor, move_data * bot_data)
 {
     //init vars
     double distance_traveled = 0;
     signed char direction = 1;
-    if (centimeters < 0)
+    int centimeters = (int) bot_data->target_y;
+    if (centimeters< 0)
     {
         direction = -1;
         centimeters *= direction;
@@ -45,6 +104,7 @@ void move_specific_distance(oi_t *sensor, int centimeters)
         }
         //lcd_printf("The Distance traveled: %lf",distance_traveled);
     }
+    bot_data->y+=(distance_traveled*direction);
 
     //stop, update display
     oi_setWheels(0, 0);
@@ -100,8 +160,100 @@ void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
 
 }
 
+//returns y displacement from goal
+unsigned int on_detect_cliff(oi_t * sensor,  move_data * bot_move_data, int which_cliff){
+    if (which_cliff==0) {
+        return 0;
+    }
+    botprintf("which_cliff: %d\n\r", which_cliff);
+    oi_setWheels(0, 0);
+    return 0;
+}
+
+
+///returns y displacement from goal
+int move_around_cliff (oi_t * sensor, move_data * bot_move_data, int which_cliff) {
+    int how_far_to_back_off_from_cliff = 7;
+    if (data_received_flag && data_received == 't')
+             {
+                 return;
+             }
+       //backwards (15 cm)
+       int RIGHT = 90;
+       int LEFT = -90;
+
+
+
+       ////////MAKE SURE THISIS MIVING IN NEGATIVE DIRECTION!!!!!!!!!!!!!!!
+       move_specific_distance(sensor, -7);
+       //rotate(90 * direction)
+
+       ///if CLIFFLEFT only
+           ///move 5ish cm to the right
+       ///same for Right only
+
+       ///if both left ones, move right a little more
+       //same for right
+
+      ///if both front ones
+           //move 90 degrees and move 50 cm to the right/ move around it
+      //if just one front sesnor
+       //turn 30ish degrees
+           //and then move forward for 50ish cm and then go back to the right line
+
+
+/*
+ * #define CLIFFFRONTLEFT 0x1
+#define CLIFFLEFT 0x2
+#define CLIFFFRONTRIGHT 0x4
+#define CLIFFRIGHT 0x8
+#define FRONT_CLIFF_HIT (CLIFFFRONTLEFT || CLIFFFRONTRIGHT)
+ */
+
+       //imagine the angle that the bot hits the cliff. we won't need to turn 90 degrees when it only barely skids the cliff, just back up and adjustturn about 15 degrees
+
+       int how_far_rotate;
+
+       switch (which_cliff) {
+       case BOTHFRONT:
+           how_far_rotate = -90;
+           break;
+       case CLIFFRIGHT:
+           how_far_rotate = 15;
+           break;
+       case CLIFFLEFT:
+           how_far_rotate = -15;
+
+           break;
+       case BOTHLEFT:
+            how_far_rotate = -45;
+                       break;
+       case BOTHRIGHT:
+           how_far_rotate = 45;
+           break;
+       default:
+           how_far_rotate=-90;
+           break;
+
+
+       }
+
+    //   turn_robot_degrees(sensor, RIGHT * rightBumper + LEFT * leftBumper);
+       //forward(25cm)
+    //   move_specific_distance(sensor, horizontal_amount);
+
+       //rotate (90* opposite direction)
+      // turn_robot_degrees(sensor, -(RIGHT * rightBumper + LEFT * leftBumper));
+
+       ///done
+
+
+}
+
 unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
 {
+    move_data bot_move_data = {0,0,0,cm};
+
     int SPEED = 200;
     double distance_traveled = 0;
     signed char direction = 1;
@@ -119,7 +271,13 @@ unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
     {
         oi_update(sensor);
         distance_traveled += (sensor->distance * direction);
+        bot_move_data.y=distance_traveled;
+        int which_cliff=detect_cliff(sensor);
+        if (which_cliff>0)
+                {
 
+                on_detect_cliff(sensor,&bot_move_data, which_cliff);
+        }
         if (sensor->bumpLeft)
             returnflag = returnflag | HIT_LEFT_BUMPER;
         if (sensor->bumpRight)
@@ -211,7 +369,7 @@ void move_around_obstacles(oi_t *sensor, int centimeters)
     oi_setWheels(0, 0);
 
 }
-void move_around_obstacle(oi_t *sensor, char leftBumper, char rightBumper)
+void move_around_obstacle(oi_t * sensor, char leftBumper, char rightBumper)
 {
     if (data_received_flag && data_received == 't')
           {

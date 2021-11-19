@@ -16,7 +16,7 @@ sonar.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/machin
 sonar.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/sys/_stdint.h
 sonar.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h
 sonar.obj: ../sonar.h
-sonar.obj: ../files_for_alarm/uart.h
+sonar.obj: ../uart.h
 
 ../sonar.c:
 
@@ -50,5 +50,5 @@ C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h:
 
 ../sonar.h:
 
-../files_for_alarm/uart.h:
+../uart.h:
 

@@ -10,7 +10,7 @@
 
 
 #include "Timer.h"
-#include "files_for_alarm/uart.h"
+#include "uart.h"
 
 volatile bool high;
 volatile bool done;
