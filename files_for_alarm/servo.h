@@ -10,7 +10,7 @@
 
 void better_servo_init();
 int turn_servo_deg(char degrees);
-void servo_calibrate();
+void servo_calibration();
 char get_deg();
 //0 degrees
 extern double servo_upper;

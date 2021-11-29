@@ -180,7 +180,7 @@ void uart_interrupt_handler()
     if (UART1_MIS_R & 0x00000010){
         data_received = UART1_DR_R & 0xFF;
         data_received_flag = 1;
-        printf("input interupt!\n");
+        //printf("input interupt!\n");
         UART1_ICR_R |=0x10;
     }
 }
@@ -209,6 +209,24 @@ char char_input(int wait_time_ms) {
         return  data_received;
 
     }
+
+char getChar() {
+    return char_input(NULL);
+
+}
+
+int getInt() {
+
+    char c;
+    int outint;
+    /*
+    do {
+        c= getChar();
+
+    }
+    while (c!=0x0D);
+    */
+}
 char is_input() {
     if (data_received_flag) {
         return 1;

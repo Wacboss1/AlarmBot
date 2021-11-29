@@ -84,6 +84,9 @@ void better_servo_init()
     // while (true) {
     //botprintf("%0x clockvalue\n\r",TIMER3_TBR_R)
     //   }
+
+    servo_zero = SERVO_RIGHT;
+    servo_180=SERVO_LEFT;
 }
 
 //Take degrees, turn it into a clock value to set the TIMER1_TBMATCHR_R to
@@ -102,14 +105,22 @@ unsigned int deg_to_clk(char degrees)
      */
 }
 //Call microfunctions to turn the servo
+///I added a little thing that makes it wait for time based off of how far the motor has to go
+//it just waits for (change in degrees * 2) for now
+///last degrees is held in last_deg
 int turn_servo_deg(char degrees)
 {
+    static int last_deg;
     if (degrees < 181)
     {
         unsigned int clock_cycles = deg_to_clk(degrees);
         move_servo(clock_cycles);
+        timer_waitMillis(abs(last_deg-degrees)*2);
+        last_deg = degrees;
+
         return 0;
     }
+
     return -1;
 }
 

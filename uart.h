@@ -24,8 +24,12 @@ extern volatile  char flag;       // Your UART interupt can update this flag
 
 ///this one checks interupt status returns 1 if there is input that needs to be read
 char is_input();
+
+//blocking. just calls char_input(NULL)
+char getChar();
 ///this one is blocking if NULL input or waits for time in ms.
 char char_input(int wait_time_ms);
+
 
 void uart_init(int baud);
 
