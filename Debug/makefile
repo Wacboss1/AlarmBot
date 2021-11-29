@@ -13,7 +13,6 @@ ORDERED_OBJS += \
 "./Timer.obj" \
 "./adc.obj" \
 "./button.obj" \
-"./cliffdetect.obj" \
 "./lcd.obj" \
 "./main.obj" \
 "./open_interface.obj" \
@@ -170,8 +169,8 @@ Lab_4.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "Timer.obj" "adc.obj" "button.obj" "cliffdetect.obj" "lcd.obj" "main.obj" "open_interface.obj" "scan.obj" "sonar.obj" "tm4c123gh6pm_startup_ccs.obj" "uart.obj" "files_for_alarm\distancesensor.obj" "files_for_alarm\movement.obj" "files_for_alarm\servo.obj" 
-	-$(RM) "Timer.d" "adc.d" "button.d" "cliffdetect.d" "lcd.d" "main.d" "open_interface.d" "scan.d" "sonar.d" "tm4c123gh6pm_startup_ccs.d" "uart.d" "files_for_alarm\distancesensor.d" "files_for_alarm\movement.d" "files_for_alarm\servo.d" 
+	-$(RM) "Timer.obj" "adc.obj" "button.obj" "lcd.obj" "main.obj" "open_interface.obj" "scan.obj" "sonar.obj" "tm4c123gh6pm_startup_ccs.obj" "uart.obj" "files_for_alarm\distancesensor.obj" "files_for_alarm\movement.obj" "files_for_alarm\servo.obj" 
+	-$(RM) "Timer.d" "adc.d" "button.d" "lcd.d" "main.d" "open_interface.d" "scan.d" "sonar.d" "tm4c123gh6pm_startup_ccs.d" "uart.d" "files_for_alarm\distancesensor.d" "files_for_alarm\movement.d" "files_for_alarm\servo.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

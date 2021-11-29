@@ -43,8 +43,8 @@ void printScn(scan_handle * scn) {
     //int dist = GetActualDistance(scn->IR);
     botprintf("deg: %d, ping: %d, dist(IR): %d\n\r",scn->angle,scn->ping,scn->IR);
 }
-int main(void)
-{
+
+int main(void){
     timer_init();
     oi_t * interface = oi_alloc();
     oi_init(interface);
@@ -66,48 +66,40 @@ int main(void)
         //char c = char_input(NULL);
         //botprintf("%c",c);
 
-
+    //TODO check if cliffSignal is greater than 2700 for white tape
+    while(1){
+        lcd_printf("FrontLeftCliff:%d\nFrontLeftSignal:%d", interface->cliffFrontLeft, interface->cliffFrontLeftSignal);
+        oi_update(interface);
+    }
 
     ///servo calibration tests
     turn_servo_deg(0);
-
-
-        while (1) {
-            if (is_input()) {
-                char c =  getChar();
-
-
-
-                switch (c) {
-                case '1':
-                    botprintf("servo calibrate");
-                    servo_calibration();
-                    break;
-                case '2':
-                    //scan tests
-                    botprintf("scan tests");
-             struct scan_handle scn;
-             simpleScam(180, &scn);
-             printScn(&scn);
-             simpleScam(0, &scn);
-             printScn(&scn);
-             simpleScam(90, &scn);
-             printScn(&scn);
-                    break;
-                case '3':
-                    ///test the movement functions
-
-                    break;
-                default:
-                    break;
-
-                }
+    while (1) {
+        if (is_input()) {
+            char c =  getChar();
+            switch (c) {
+            case '1':
+                botprintf("servo calibrate");
+                servo_calibration();
+                break;
+            case '2':
+                //scan tests
+                botprintf("scan tests");
+         struct scan_handle scn;
+         simpleScam(180, &scn);
+         printScn(&scn);
+         simpleScam(0, &scn);
+         printScn(&scn);
+         simpleScam(90, &scn);
+         printScn(&scn);
+                break;
+            case '3':
+                ///test the movement functions
+                break;
+            default:
+                break;
 
             }
-
-
         }
-
-
-
+    }
 }
