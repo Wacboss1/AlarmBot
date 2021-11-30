@@ -46,7 +46,7 @@ void printScn(scan_handle * scn) {
 
 int main(void){
     timer_init();
-    oi_t * interface = oi_alloc();
+    oi_t* interface = oi_alloc();
     oi_init(interface);
 
 
@@ -67,10 +67,11 @@ int main(void){
         //botprintf("%c",c);
 
     //TODO check if cliffSignal is greater than 2700 for white tape
-    while(1){
-        lcd_printf("FrontLeftCliff:%d\nFrontLeftSignal:%d", interface->cliffFrontLeft, interface->cliffFrontLeftSignal);
-        oi_update(interface);
-    }
+    FindStartPostition(interface);
+//    while(1){
+//        lcd_printf("FrontLeftSignal:\n%d\nFrontRightSignal:\n%d",interface->cliffFrontLeftSignal, interface->cliffFrontRightSignal);
+//        oi_update(interface);
+//    }
 
     ///servo calibration tests
     turn_servo_deg(0);
