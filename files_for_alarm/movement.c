@@ -31,19 +31,6 @@ void move_around_obstacle(oi_t *sensor, char leftBumper, char rightBumper);
 #define BOTHFRONT 0x5
 #define BOTHLEFT 0x3
 
-typedef struct movement_data{
-    double x;
-    double y;
-    int rotation;
-    double target_x;
-    double target_y;
-    double waypoint_x;
-    double waypoint_y;
-
-} move_data;
-
-void move_distance(oi_t *sensor, move_data * bot_data);
-
 
 int detect_cliff(oi_t * sensor) {
     int return_value=0;
@@ -66,50 +53,6 @@ int detect_cliff(oi_t * sensor) {
 
 }
 
-/////this one is used by user
-///it calls move_distance after instantiating a bot_data with the target y value
-////
-void move_specific_distance(oi_t *sensor, int centimeters) {
-
-    //Use a sensor to move a specific distance, in cm
-    move_data bot_data = {0,0,0,centimeters};
-    move_distance(sensor, &bot_data);
-
-}
-
-///this one is not in header file and handles a simple move
-//does not check any sensors for any danger or nothin
-void move_distance(oi_t *sensor, move_data * bot_data)
-{
-    //init vars
-    double distance_traveled = 0;
-    signed char direction = 1;
-    int centimeters = (int) bot_data->target_y;
-    if (centimeters< 0)
-    {
-        direction = -1;
-        centimeters *= direction;
-    }
-    //lcd_init();
-    timer_init();
-    oi_setWheels(200 * direction, 200 * direction); //rwheel, lwheel
-    //while loop to travel the set distance
-    while (distance_traveled < centimeters * 10)
-    {
-        oi_update(sensor);
-        distance_traveled += (sensor->distance * direction);
-        if (data_received_flag && data_received == 't')
-        {
-            break;
-        }
-        //lcd_printf("The Distance traveled: %lf",distance_traveled);
-    }
-    bot_data->y+=(distance_traveled*direction);
-
-    //stop, update display
-    oi_setWheels(0, 0);
-
-}
 void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
 {
 
@@ -159,6 +102,45 @@ void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
     oi_setWheels(0, 0);
 
 }
+void FindStartPostition(oi_t* sensor)
+{
+    //Poke around to find an nearby edge of the playing field
+    int i;
+    for(i = 0; i < 4; i++){
+        actually_move_until_detect_obstacle(sensor, 20);
+        actually_move_until_detect_obstacle(sensor, -20);
+        if(FieldEdgeFound)
+        {
+            break;
+        }
+        turn_robot_degrees(sensor, 90);
+    }
+    //orient self to move along edge
+    //TODO add if statement for if an edge is found after looking around
+    move_specific_distance(sensor, -10);
+    turn_robot_degrees(sensor, -90);
+    FieldEdgeFound = 0;
+    //move along the edge until a corner is found
+    while(!FieldEdgeFound)
+    {
+        actually_move_until_detect_obstacle(sensor, 30);
+    }
+    //orient self to being searching for goal
+    move_specific_distance(sensor, -10);
+    turn_robot_degrees(sensor, -90);
+}
+
+int StopOnLine(oi_t* sensor)
+{
+    if(sensor->cliffFrontLeftSignal >= 2700 ||
+       sensor->cliffFrontRightSignal >= 2700)
+    {
+            oi_setWheels(0,0);
+            FieldEdgeFound = 1;
+            return 1;
+    }
+    return 0;
+}
 
 //returns y displacement from goal
 unsigned int on_detect_cliff(oi_t * sensor,  move_data * bot_move_data, int which_cliff){
@@ -175,16 +157,16 @@ unsigned int on_detect_cliff(oi_t * sensor,  move_data * bot_move_data, int whic
 int move_around_cliff (oi_t * sensor, move_data * bot_move_data, int which_cliff) {
     int how_far_to_back_off_from_cliff = 7;
     if (data_received_flag && data_received == 't')
-             {
-                 return;
-             }
-       //backwards (15 cm)
-       int RIGHT = 90;
-       int LEFT = -90;
+    {
+        return;
+    }
+    //backwards (15 cm)
+    int RIGHT = 90;
+    int LEFT = -90;
 
 
 
-       ////////MAKE SURE THISIS MIVING IN NEGATIVE DIRECTION!!!!!!!!!!!!!!!
+       ////////MAKE SURE THIS IS MOVING IN NEGATIVE DIRECTION!!!!!!!!!!!!!!!
        move_specific_distance(sensor, -7);
        //rotate(90 * direction)
 
@@ -250,10 +232,34 @@ int move_around_cliff (oi_t * sensor, move_data * bot_move_data, int which_cliff
 
 }
 
+/////this one is used by user
+///it calls move_distance after instantiating a bot_data with the target y value
+////
+void move_specific_distance(oi_t *sensor, int cm) {
+    move_data bot_move_data = {0,0,0,cm};
+    int SPEED = 200;
+    double distance_traveled = 0;
+    signed char direction = 1;
+    if (cm < 0)
+    {
+        direction = -1;
+        cm *= direction;
+    }
+    timer_init();
+    oi_setWheels(SPEED * direction, SPEED * direction); //rwheel, lwheel
+    while (distance_traveled < cm * 10)
+    {
+        oi_update(sensor);
+        distance_traveled += (sensor->distance * direction);
+        bot_move_data.y=distance_traveled;
+    }
+    oi_setWheels(0, 0);
+}
+
 unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
 {
+    FieldEdgeFound = 0;
     move_data bot_move_data = {0,0,0,cm};
-
     int SPEED = 200;
     double distance_traveled = 0;
     signed char direction = 1;
@@ -267,16 +273,20 @@ unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
     oi_setWheels(SPEED * direction, SPEED * direction); //rwheel, lwheel
     //while loop to travel the set distance
     unsigned char returnflag = 0;
+
     while (distance_traveled < cm * 10)
     {
+        if(StopOnLine(sensor))
+        {
+            break;
+        }
         oi_update(sensor);
         distance_traveled += (sensor->distance * direction);
         bot_move_data.y=distance_traveled;
         int which_cliff=detect_cliff(sensor);
         if (which_cliff>0)
-                {
-
-                on_detect_cliff(sensor,&bot_move_data, which_cliff);
+        {
+            on_detect_cliff(sensor,&bot_move_data, which_cliff);
         }
         if (sensor->bumpLeft)
             returnflag = returnflag | HIT_LEFT_BUMPER;
@@ -295,6 +305,7 @@ unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
     oi_setWheels(0, 0);
     return returnflag;
 }
+
 const int backwards_amount = 0;
 const int horizontal_amount = 10;
 void move_around_obstacles(oi_t *sensor, int centimeters)

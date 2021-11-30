@@ -12,7 +12,6 @@ C_SRCS += \
 ../Timer.c \
 ../adc.c \
 ../button.c \
-../cliffdetect.c \
 ../lcd.c \
 ../main.c \
 ../open_interface.c \
@@ -25,7 +24,6 @@ C_DEPS += \
 ./Timer.d \
 ./adc.d \
 ./button.d \
-./cliffdetect.d \
 ./lcd.d \
 ./main.d \
 ./open_interface.d \
@@ -38,7 +36,6 @@ OBJS += \
 ./Timer.obj \
 ./adc.obj \
 ./button.obj \
-./cliffdetect.obj \
 ./lcd.obj \
 ./main.obj \
 ./open_interface.obj \
@@ -51,7 +48,6 @@ OBJS__QUOTED += \
 "Timer.obj" \
 "adc.obj" \
 "button.obj" \
-"cliffdetect.obj" \
 "lcd.obj" \
 "main.obj" \
 "open_interface.obj" \
@@ -64,7 +60,6 @@ C_DEPS__QUOTED += \
 "Timer.d" \
 "adc.d" \
 "button.d" \
-"cliffdetect.d" \
 "lcd.d" \
 "main.d" \
 "open_interface.d" \
@@ -77,7 +72,6 @@ C_SRCS__QUOTED += \
 "../Timer.c" \
 "../adc.c" \
 "../button.c" \
-"../cliffdetect.c" \
 "../lcd.c" \
 "../main.c" \
 "../open_interface.c" \
