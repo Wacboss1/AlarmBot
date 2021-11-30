@@ -126,6 +126,7 @@ void FindStartPostition(oi_t* sensor)
         actually_move_until_detect_obstacle(sensor, 30);
     }
     //orient self to being searching for goal
+    move_specific_distance(sensor, -10);
     turn_robot_degrees(sensor, -90);
 }
 
