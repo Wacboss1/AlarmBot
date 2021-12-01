@@ -160,7 +160,7 @@ scanned_obj* smallest_object_360()
     all_smallest[BACK_I] = &back_objects[smallestangles[BACK_I]];
 
     int i = 0;
-int smallestDirection=-1;
+    int smallestDirection=-1;
     scanned_obj *smallestObj = all_smallest[0];
 
     for (i = 0; i < 4; i++)
@@ -198,6 +198,7 @@ char switch_autonomous()
     }
     return -1;
 }
+
 char scan_360(oi_t *sensor)
 {
     if (data_received_flag && data_received == 't')
@@ -355,6 +356,7 @@ char refined_scan180(scanned_obj *objarray)
     output_scan_data();
     return 0;
 }
+
 char objsFrmScns(scanned_obj *objarray)
 {
     //these and those in the above function should be in a struct or something
@@ -386,8 +388,7 @@ char objsFrmScns(scanned_obj *objarray)
             // ---===Update Object Values===---
             objarray[num_objs_list[direction]].angle = first_angle;
             objarray[num_objs_list[direction]].angle2 = second_angle;
-            objarray[num_objs_list[direction]].radial_width = second_angle
-                    - first_angle;
+            objarray[num_objs_list[direction]].radial_width = second_angle - first_angle;
 
             // These two will be updated on our second scan with the PING sensor's distance;
             objarray[num_objs_list[direction]].distance = IR_TO_DIST(
@@ -416,8 +417,8 @@ char objsFrmScns(scanned_obj *objarray)
                     CyBOT_sendStr("(starting angle is zero)\n\r");
                 if (second_angle >= 180 - deg_multiplier)
                     botprintf("2nd angle above the limit");
-
             }
+
             if (VERY_VERBOSE)
             {
                 if (objarray[num_objs_list[direction]].distance != 0
@@ -432,7 +433,6 @@ char objsFrmScns(scanned_obj *objarray)
 
                 }
             }
-
         }
     }
 
@@ -442,9 +442,7 @@ char objsFrmScns(scanned_obj *objarray)
 
 char sonar_dist_scan(scanned_obj *objarray)
 {
-
     int direction = which_direction(objarray);
-
     // =======Do second scan, pointing ping sensor at center of objects========
     int k = 0;
     for (k = 0; k < num_objs_list[direction]; k++)
@@ -462,7 +460,6 @@ char sonar_dist_scan(scanned_obj *objarray)
         timer_waitMicros(300);
     }
     return 0;
-
 }
 
 ///Runs scans, stores to all_scans

@@ -53,7 +53,7 @@ char scan_360();
 void botprintf(char *format, ...);
 void output_scan_data();
 void print_found_objects();
-void     scan_range();
+void scan_range();
 int smallest_object_angle();
 scanned_obj* smallest_object_360();
 int which_direction(scanned_obj * p);

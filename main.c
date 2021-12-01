@@ -55,10 +55,15 @@ int main(void){
     lcd_init();
     better_servo_init();
     uart_init(115200);
-   //  SonarConfig();
+    SonarConfig();
     uart_interrupt_init();
-    botprintf("battery: %d out of %d\n\r",interface->batteryCharge,interface->batteryCapacity );
+    botprintf("battery: %d out of %d\n\r",interface->batteryCharge,interface->batteryCapacity);
     lcd_printf("battery: %d out of %d\n",interface->batteryCharge,interface->batteryCapacity);
+
+
+    scanned_obj* objects = smallest_object_360();
+
+
 
     ///this is a bunch of tests, we can put it into a function later sometime
         //
@@ -66,41 +71,36 @@ int main(void){
         //char c = char_input(NULL);
         //botprintf("%c",c);
 
-    //TODO check if cliffSignal is greater than 2700 for white tape
-    FindStartPostition(interface);
-//    while(1){
-//        lcd_printf("FrontLeftSignal:\n%d\nFrontRightSignal:\n%d",interface->cliffFrontLeftSignal, interface->cliffFrontRightSignal);
-//        oi_update(interface);
-//    }
+    //FindStartPostition(interface);
 
     ///servo calibration tests
-    turn_servo_deg(0);
-    while (1) {
-        if (is_input()) {
-            char c =  getChar();
-            switch (c) {
-            case '1':
-                botprintf("servo calibrate");
-                servo_calibration();
-                break;
-            case '2':
-                //scan tests
-                botprintf("scan tests");
-         struct scan_handle scn;
-         simpleScam(180, &scn);
-         printScn(&scn);
-         simpleScam(0, &scn);
-         printScn(&scn);
-         simpleScam(90, &scn);
-         printScn(&scn);
-                break;
-            case '3':
-                ///test the movement functions
-                break;
-            default:
-                break;
-
-            }
-        }
-    }
+//    turn_servo_deg(0);
+//    while (1) {
+//        if (is_input()) {
+//            char c =  getChar();
+//            switch (c) {
+//            case '1':
+//                botprintf("servo calibrate");
+//                servo_calibration();
+//                break;
+//            case '2':
+//                //scan tests
+//                botprintf("scan tests");
+//         struct scan_handle scn;
+//         simpleScam(180, &scn);
+//         printScn(&scn);
+//         simpleScam(0, &scn);
+//         printScn(&scn);
+//         simpleScam(90, &scn);
+//         printScn(&scn);
+//                break;
+//            case '3':
+//                ///test the movement functions
+//                break;
+//            default:
+//                break;
+//
+//            }
+//        }
+//    }
 }
