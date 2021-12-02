@@ -24,7 +24,7 @@
 int main(void)
 {
     timer_init();
-    oi_t * interface = oi_alloc();
+    oi_t* interface = oi_alloc();
     oi_init(interface);
 
 
@@ -44,7 +44,12 @@ int main(void)
         //char c = char_input(NULL);
         //botprintf("%c",c);
 
-
+    //TODO check if cliffSignal is greater than 2700 for white tape
+    FindStartPostition(interface);
+//    while(1){
+//        lcd_printf("FrontLeftSignal:\n%d\nFrontRightSignal:\n%d",interface->cliffFrontLeftSignal, interface->cliffFrontRightSignal);
+//        oi_update(interface);
+//    }
 
     ///servo calibration tests
     turn_servo_deg(0);
@@ -91,13 +96,7 @@ int main(void)
 
                     break;
 
-                }
-
             }
-
-
         }
-
-
-
+    }
 }
