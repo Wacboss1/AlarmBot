@@ -38,7 +38,7 @@ int main(void){
     lcd_printf("battery: %d out of %d\n",interface->batteryCharge,interface->batteryCapacity);
 
 
-    scanned_obj* objects = smallest_object_360();
+//    scanned_obj* objects = smallest_object_360();
 
 
 
