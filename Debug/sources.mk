@@ -112,5 +112,4 @@ PDE_DEPS__QUOTED :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 . \
-files_for_alarm \
 

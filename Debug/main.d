@@ -21,7 +21,7 @@ main.obj: ../lcd.h
 main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdio.h
 main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdarg.h
 main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/string.h
-main.obj: U:/git/AlarmBot/files_for_alarm/servo.h
+main.obj: ../servo.h
 main.obj: ../sonar.h
 main.obj: ../uart.h
 main.obj: ../open_interface.h
@@ -29,9 +29,9 @@ main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdlib.
 main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/math.h
 main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/_defs.h
 main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/machine/_limits.h
-main.obj: U:/git/AlarmBot/files_for_alarm/movement.h
-main.obj: ../files_for_alarm/distancesensor.h
-main.obj: ../files_for_alarm/botconfig.h
+main.obj: ../movement.h
+main.obj: ../botconfig.h
+main.obj: ../scan.h
 
 ../main.c:
 
@@ -75,7 +75,7 @@ C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdarg.h:
 
 C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/string.h:
 
-U:/git/AlarmBot/files_for_alarm/servo.h:
+../servo.h:
 
 ../sonar.h:
 
@@ -91,9 +91,9 @@ C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/_defs.h:
 
 C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/machine/_limits.h:
 
-U:/git/AlarmBot/files_for_alarm/movement.h:
+../movement.h:
 
-../files_for_alarm/distancesensor.h:
+../botconfig.h:
 
-../files_for_alarm/botconfig.h:
+../scan.h:
 
