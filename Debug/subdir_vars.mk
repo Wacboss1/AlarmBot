@@ -14,10 +14,13 @@ C_SRCS += \
 ../button.c \
 ../lcd.c \
 ../main.c \
+../movement.c \
 ../open_interface.c \
 ../scan.c \
+../servo.c \
 ../sonar.c \
 ../tm4c123gh6pm_startup_ccs.c \
+../traversal.c \
 ../uart.c 
 
 C_DEPS += \
@@ -26,10 +29,13 @@ C_DEPS += \
 ./button.d \
 ./lcd.d \
 ./main.d \
+./movement.d \
 ./open_interface.d \
 ./scan.d \
+./servo.d \
 ./sonar.d \
 ./tm4c123gh6pm_startup_ccs.d \
+./traversal.d \
 ./uart.d 
 
 OBJS += \
@@ -38,10 +44,13 @@ OBJS += \
 ./button.obj \
 ./lcd.obj \
 ./main.obj \
+./movement.obj \
 ./open_interface.obj \
 ./scan.obj \
+./servo.obj \
 ./sonar.obj \
 ./tm4c123gh6pm_startup_ccs.obj \
+./traversal.obj \
 ./uart.obj 
 
 OBJS__QUOTED += \
@@ -50,10 +59,13 @@ OBJS__QUOTED += \
 "button.obj" \
 "lcd.obj" \
 "main.obj" \
+"movement.obj" \
 "open_interface.obj" \
 "scan.obj" \
+"servo.obj" \
 "sonar.obj" \
 "tm4c123gh6pm_startup_ccs.obj" \
+"traversal.obj" \
 "uart.obj" 
 
 C_DEPS__QUOTED += \
@@ -62,10 +74,13 @@ C_DEPS__QUOTED += \
 "button.d" \
 "lcd.d" \
 "main.d" \
+"movement.d" \
 "open_interface.d" \
 "scan.d" \
+"servo.d" \
 "sonar.d" \
 "tm4c123gh6pm_startup_ccs.d" \
+"traversal.d" \
 "uart.d" 
 
 C_SRCS__QUOTED += \
@@ -74,10 +89,13 @@ C_SRCS__QUOTED += \
 "../button.c" \
 "../lcd.c" \
 "../main.c" \
+"../movement.c" \
 "../open_interface.c" \
 "../scan.c" \
+"../servo.c" \
 "../sonar.c" \
 "../tm4c123gh6pm_startup_ccs.c" \
+"../traversal.c" \
 "../uart.c" 
 
 
