@@ -1,3 +1,4 @@
+
 /*
  * movement.c
  *
@@ -44,27 +45,6 @@ typedef struct movement_data{
 
 void move_distance(oi_t *sensor, move_data * bot_data);
 
-
-int detect_cliff(oi_t * sensor) {
-    int return_value=0;
-    if (sensor->cliffLeft) {
-           return_value|=CLIFFLEFT;
-    }
-    if (sensor->cliffFrontLeft) {
-        return_value|=CLIFFFRONTLEFT;
-
-    }
-     if (sensor->cliffRight) {
-         return_value|=CLIFFRIGHT;
-
-    }
-    else if (sensor->cliffFrontRight) {
-        return_value|=CLIFFFRONTRIGHT;
-
-    }
-    return return_value;
-
-}
 
 /////this one is used by user
 ///it calls move_distance after instantiating a bot_data with the target y value

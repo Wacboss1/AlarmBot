@@ -11,13 +11,35 @@
 #include "sonar.h"
 
 
+#define SCANNABLE_DISTANCE 50
+
+typedef struct
+{
+    int angle;
+    float distance;
+    int angle2;
+    int radial_width;
+    float straight_width;
+    int scan_direction;
+} scanned_obj;
+
 int SonarScan(int angle, Ping* ping);
 int IRRawScan(int angle);
 int IRDistanceScan(int angle);
 int GetActualDistance(int x);
+extern int num_objs_list[4];
+#define NFRONTOBJ num_objs_list[0]
 
+typedef struct scan_handle {
+    int angle;
+    int  ping;
+    int IR;
+} scan_handle;
 
+char scan180_alarmbot(scanned_obj objarray[]);
 
+int simpleScan(char deg, scan_handle * scn);
+test_object_shit();
 
 
 #endif /* SCAN_H_ */

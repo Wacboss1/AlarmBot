@@ -87,7 +87,9 @@ extern scanned_obj left_objects[40];
 #define RIGHTDEG 270
 #define BACKDEG 180
 #define LEFTDEG 90
-extern int obj_list[4];
+extern int num_objs_list[4];
+
+#define NFRONTOBJ num_objs_list[FRONT_I]
 
 
 

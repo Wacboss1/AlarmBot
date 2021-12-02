@@ -4,7 +4,7 @@
  *  Created on: Sep 7, 2021
  *      Author: wclemms
  */
-/*
+
 #include "open_interface.h"
 #include "lcd.h"
 
@@ -23,4 +23,4 @@ void onLeftBumper(oi_t*);
 void onRightBumper(oi_t*);
 void ControlMove(char , int, int );
 #endif /* MOVEMENT_H_ */
-*/
+

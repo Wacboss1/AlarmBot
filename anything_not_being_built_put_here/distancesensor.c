@@ -32,10 +32,11 @@ const char * SCND_DIR_STR [] ={ "FRONT",  "LEFT", "BACK", "RIGHT"};
 
 
 void our_scan(cyBOT_Scan_t * scan) {
-    int d = adc_read();
+
+ /*   int d = adc_read();
         scan->sound_dist=better_ping_read();
         botprintf("sound scan initial value: %lf",scan->sound_dist);
-        scan->IR_raw_val=d;
+        scan->IR_raw_val=d;*/
 }
 
 
