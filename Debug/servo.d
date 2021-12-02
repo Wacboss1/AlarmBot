@@ -1,7 +1,6 @@
 # FIXED
 
 servo.obj: ../servo.c
-servo.obj: ../servo.h
 servo.obj: ../Timer.h
 servo.obj: C:/ti/TivaWare_C_Series-2.1.4.178/inc/tm4c123gh6pm.h
 servo.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdbool.h
@@ -20,10 +19,10 @@ servo.obj: ../lcd.h
 servo.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdio.h
 servo.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdarg.h
 servo.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/string.h
+servo.obj: ../botconfig.h
+servo.obj: ../button.h
 
 ../servo.c:
-
-../servo.h:
 
 ../Timer.h:
 
@@ -60,4 +59,8 @@ C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdio.h:
 C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdarg.h:
 
 C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/string.h:
+
+../botconfig.h:
+
+../button.h:
 
