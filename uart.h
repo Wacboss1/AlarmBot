@@ -31,6 +31,7 @@ char getChar();
 char char_input(int wait_time_ms);
 
 
+
 void uart_init(int baud);
 
 void uart_sendChar(char data);

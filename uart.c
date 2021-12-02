@@ -78,9 +78,10 @@ void botprintf(char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    char tosend[1000];
-    vsnprintf(tosend, 1000, format, args);
+    char tosend[1024];
+    vsnprintf(tosend, 1024, format, args);
     uart_sendStr(tosend);
+    va_end(args);
 
 }
 

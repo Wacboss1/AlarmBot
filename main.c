@@ -87,15 +87,15 @@ int main(void){
 
                     break;
                 case '4':
-
-                    test_object_shit();
+                 //   test_scans_print_scans();
+                    test_object_shit(interface);
                     break;
 
                 case '5':
                     FindStartPostition(interface);
-                default:
-
                     break;
+                default:
+                   break;
 
                 }
 

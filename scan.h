@@ -39,7 +39,7 @@ typedef struct scan_handle {
     int IR;
 } scan_handle;
 
-char scan180_alarmbot(scanned_obj objarray[]);
+char scan180_alarmbot();
 
 int simpleScan(char deg, scan_handle * scn);
 int scan();
@@ -48,5 +48,6 @@ int SonarScan(int angle, Ping* ping);
 int IRRawScan(int angle);
 int IRDistanceScan(int angle);
 int GetActualDistance(int x);
-
+void output_scan_data(scanned_obj  objectlist[]);
+int test_scans_print_scans();
 #endif /* SCAN_H_ */

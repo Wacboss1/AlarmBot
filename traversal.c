@@ -17,6 +17,7 @@
 #include "button.h"
 #include "uart.h"
 #include "scan.h"
+#include "traversal.h"
 
 
 //#include "distancesensor.h"
@@ -25,20 +26,23 @@
 
 extern scanned_obj front_objects[40];
 extern scan_handle all_scans[180];
-int num_objs_list[4];
+extern int num_objs_list[4];
 
 
-int test_object_shit() {
-    int scn = scan();
-    if (scn>-1){
-        lcd_printf("Found object %d",scn);
-    }
-    else if(scn==0) {
+int test_object_shit(oi_t * sensor){
+   // int scn = scan();
+    //if (scn>-1){
+    //    lcd_printf("Found object %d",scn);
+   // }
+   // else if(scn==0) {
 
-    }
+//    }
+    go_around_big_obstacles(sensor);
+
     while (button_getButton()==0) {
 
     }
+
     return 0;
 
 }
@@ -80,8 +84,11 @@ int scan()
 {
 
     //scan_handle scn;
-    scan180_alarmbot(front_objects);
+    scan180_alarmbot();
 
+    ///process objects
+    objsFrmScns(front_objects);
+    print_found_objects(front_objects);
     int i;
 
     ///if no objects detected return 1
@@ -94,16 +101,13 @@ int scan()
         }
 
     }
+
     return 0;
 }
 
-#define FORWARD_OA 0
-#define RIGHT_OA 1
-#define BACK_OA 2
-#define LEFT_OA 3
-#define CELLSIZE_OA 50
 
-void turnRight90(oi_t *sensor, int * cur) {
+
+int turnRight90(oi_t *sensor, int * cur) {
     if (*cur==3){
         *cur=0;
     }
@@ -112,7 +116,7 @@ void turnRight90(oi_t *sensor, int * cur) {
     }
     turn_robot_degrees(sensor, -90);
 }
-void turnLeft90(oi_t *sensor, int * cur) {
+int turnLeft90(oi_t *sensor, int * cur) {
     if (*cur==0){
         *cur=3;
     }
@@ -122,7 +126,7 @@ void turnLeft90(oi_t *sensor, int * cur) {
     turn_robot_degrees(sensor, 90);
 }
 
-void faceMiddle(oi_t * sensor, int * cur, int * gridX) {
+int faceMiddle(oi_t * sensor, int * cur, int * gridX) {
     int turnD;
     ///face left
     if (*gridX >0) {
@@ -165,10 +169,11 @@ void faceMiddle(oi_t * sensor, int * cur, int * gridX) {
         *cur=RIGHT_OA;
     }
     turn_robot_degrees(sensor, turnD);
+    return 0;
 
 }
 
-void move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY) {
+int move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY) {
     switch (*cur)  {
     case FORWARD_OA:
         *gridY+=CELLSIZE_OA;
@@ -183,14 +188,15 @@ void move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY) {
             *gridX-=CELLSIZE_OA;
     }
     actually_move_until_detect_obstacle(sensor, CELLSIZE_OA);
+    return 0;
 }
 
 int go_around_big_obstacles(oi_t *sensor) {
 
-    int gridX;
-    int gridY;
-    int directionfacing; //0forward,1right,2back,3left
-    int scanresult;
+    int gridX=0;
+    int gridY=0;
+    int directionfacing=0; //0forward,1right,2back,3left
+    int scanresult=0;
     do {
         if (gridX==0) {
         //turn to face the right
@@ -204,7 +210,11 @@ int go_around_big_obstacles(oi_t *sensor) {
         else if (gridY==0) {
             turnLeft90(sensor, &directionfacing);
             ///scan area to the right
+            if (directionfacing!=BACK_OA)
             scanresult=scan();
+            else {
+                scanresult=-1;
+            }
             if (scanresult==-1) {
             move_forward_OA(sensor, &directionfacing, &gridX, &gridY);
             }
