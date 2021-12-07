@@ -93,7 +93,56 @@ char scan180_alarmbot(scanned_obj objarray[])
     return 0;
 }
 
+char objectsFrmScns(scanned_obj* objectArray)
+{
+    Ping* ping = malloc(sizeof(Ping));
 
+    unsigned char nscans = 40;
+    int degMulti = 180 / nscans;
+    int objectNumber = 0;
+    int i = 0;
+
+    for(i = 0; i < 180; i += degMulti)
+    {
+        int firstAngle, secondAngle;
+        scan_handle currentScan = all_scans[i];
+        int distance = GetActualDistance(currentScan.IR);
+        if(distance <= 50)
+        {
+            firstAngle = i;
+            while(distance <= 50 && i < 180)
+            {
+                i += degMulti;
+                currentScan = all_scans[i];
+            }
+            secondAngle = i - degMulti;
+
+            //Does not use sonar for distance
+            scanned_obj newObject;
+            newObject.angle = firstAngle;
+            newObject.angle2 = secondAngle;
+            newObject.radial_width = secondAngle - firstAngle;
+            newObject.distance = SonarScan((float)newObject.radial_width/2, ping);
+            newObject.straight_width = GetStraightWidth(newObject.distance, newObject.radial_width);
+
+            objectArray[objectNumber] = newObject;
+
+
+            if (secondAngle - firstAngle > 0 &&
+                firstAngle != 0 &&
+                !(secondAngle >= (180 - degMulti)))
+            {
+                objectNumber++;
+            }
+        }
+    }
+}
+
+float GetStraightWidth(float distance, int angle)
+{
+    float new_angle = angle * 3.14159 / 180;
+    return 2 * distance * sin((double) (new_angle) / 2);
+}
 
 void printScn(scan_handle * scn) {
     //int dist = GetActualDistance(scn->IR);

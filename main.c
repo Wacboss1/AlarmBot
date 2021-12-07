@@ -38,7 +38,9 @@ int main(void){
     lcd_printf("battery: %d out of %d\n",interface->batteryCharge,interface->batteryCapacity);
 
 
-//    scanned_obj* objects = smallest_object_360();
+    scanned_obj objects[4];
+    scan180_alarmbot(objects);
+
 
 
 
@@ -48,8 +50,9 @@ int main(void){
         //char c = char_input(NULL);
         //botprintf("%c",c);
 
+
     //FindStartPostition(interface);
-    //TODO check if cliffSignal is greater than 2700 for white tape
+
 
 //    while(1){
 //        lcd_printf("FrontLeftSignal:\n%d\nFrontRightSignal:\n%d",interface->cliffFrontLeftSignal, interface->cliffFrontRightSignal);

@@ -399,7 +399,8 @@ char objsFrmScns(scanned_obj *objarray)
 
             objarray[num_objs_list[direction]].scan_direction = direction;
 
-            if (second_angle - first_angle > 0 && first_angle != 0
+            if (second_angle - first_angle > 0
+                    && first_angle != 0
                     && !(second_angle >= (180 - deg_multiplier)))
                 num_objs_list[direction]++;
             else if (VERY_VERBOSE)
