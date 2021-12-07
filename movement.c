@@ -6,7 +6,8 @@
  */
 
 #include "movement.h"
-
+#include "uart.h"
+#include <math.h>
 int current_deg = 0;
 
 static double POWER_OFFSET = 1;
@@ -19,17 +20,63 @@ void move_around_obstacle(oi_t *sensor, char leftBumper, char rightBumper);
 ///Speed of right wheel while it is turning
 #define TURNING_FWD_SPD 150
 //speed of left wheel
-#define TURNING_BKWD_SPD (-150 * POWER_OFFSET)
+#define TURNING_BKWD_SPD (-150* POWER_OFFSET)
+
+///moved this here because an global variable cannot be declared more than once
+///in other places it has to be declared as "extern int FieldEdgeFound;"
+int FieldEdgeFound;
 
 
-#define CLIFFFRONTLEFT 0x1
-#define CLIFFLEFT 0x2
-#define CLIFFFRONTRIGHT 0x4
-#define CLIFFRIGHT 0x8
-#define FRONT_CLIFF_HIT (CLIFFFRONTLEFT || CLIFFFRONTRIGHT)
-#define BOTHRIGHT 0xD
-#define BOTHFRONT 0x5
-#define BOTHLEFT 0x3
+float _botx=0;
+float _boty=0;
+int  _botdeg=90;
+
+
+
+#define INTDEGTORAD(a) ((((double)(a))*(2*M_PI))/360.0)
+int update_rotation_data(int deg) {
+_botdeg+=(deg % 360);
+_botdeg=(_botdeg%360);
+return 0;
+}
+
+
+int update_move_data(int dist) {
+_botx+=cos(INTDEGTORAD(_botdeg))*dist;
+_boty+=sin(INTDEGTORAD(_botdeg))*dist;
+}
+
+
+int configure_wheels(oi_t *sensor) {
+    char  ch =  getChar();
+    oi_setMotorCalibration(.96,oi_getMotorCalibrationRight());
+
+    while (ch!='q') {
+        switch (ch) {
+        case 'w':
+            oi_setMotorCalibration(oi_getMotorCalibrationLeft()+.02,oi_getMotorCalibrationRight());
+            turn_robot_degrees(sensor, 360);
+            break;
+        case 'd':
+            turn_robot_degrees(sensor, 360);
+            break;
+        case 'a':
+            break;
+        case 's':
+            oi_setMotorCalibration(oi_getMotorCalibrationLeft()-.02,oi_getMotorCalibrationRight());
+            turn_robot_degrees(sensor, 360);
+            break;
+        default:
+            break;
+
+        }
+        botprintf("left: %lf, right: %lf\n\r",oi_getMotorCalibrationLeft(),oi_getMotorCalibrationRight() );
+        ch=getChar();
+    }
+
+
+}
+
 
 
 int detect_cliff(oi_t * sensor) {
@@ -59,7 +106,7 @@ void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
     current_deg += degrees_to_turn;
 
     //ofset degrees
-    int degrees_offset = 1;
+    int degrees_offset = 0; ///just changed from 1 12/06/2021
 
     //Use angle member of oi_t struct
     //Init vars
@@ -256,7 +303,12 @@ void move_specific_distance(oi_t *sensor, int cm) {
     oi_setWheels(0, 0);
 }
 
-unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
+/*
+ * returns cm not traveled as the first byte, and the second byte has all the flags of what sensors were set off
+ * these changes should not effect any code
+ * if we moved more than 255 centimeters, this could be problematic
+ */
+unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
 {
     FieldEdgeFound = 0;
     move_data bot_move_data = {0,0,0,cm};
@@ -274,7 +326,7 @@ unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
     //while loop to travel the set distance
     unsigned char returnflag = 0;
 
-    while (distance_traveled < cm * 10)
+    while (distance_traveled < cm * 10) ///we should not have to multiply the number of centimeters by 10
     {
         if(StopOnLine(sensor))
         {
@@ -287,6 +339,8 @@ unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
         if (which_cliff>0)
         {
             on_detect_cliff(sensor,&bot_move_data, which_cliff);
+            returnflag |= which_cliff;
+
         }
         if (sensor->bumpLeft)
             returnflag = returnflag | HIT_LEFT_BUMPER;
@@ -303,6 +357,10 @@ unsigned char actually_move_until_detect_obstacle(oi_t *sensor, int cm)
         }
     }
     oi_setWheels(0, 0);
+    //this should give us what we need, sometimes, assuming we aren't multiplying our cm by 10
+    if (returnflag) {
+    returnflag += ((unsigned int) distance_traveled)<<8;
+    }
     return returnflag;
 }
 

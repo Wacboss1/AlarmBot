@@ -18,7 +18,12 @@
 #include "uart.h"
 #include "scan.h"
 #include "traversal.h"
+#include "math.h"
 
+#define DEG_TO_RAD(a) a*(M_PI*2/360)
+#define RAD_TO_DEG(a) a*(360)/(M_PI*2)
+
+//int lowestCliffX,lowestCliffY,
 
 //#include "distancesensor.h"
 
@@ -28,6 +33,7 @@ extern scanned_obj front_objects[40];
 extern scan_handle all_scans[180];
 extern int num_objs_list[4];
 
+extern int FieldEdgeFound;
 
 int test_object_shit(oi_t * sensor){
    // int scn = scan();
@@ -79,7 +85,8 @@ int obj_in_way(scanned_obj * obj) {
 ///returns -2 if found endpoint
 ///returns index of object if we need to movearound object
 //movearound an object
-
+#define CLEAR_SPACE -1
+#define ENDPOINT_FOUND -2
 int scan()
 {
 
@@ -97,10 +104,11 @@ int scan()
     }
     for (i=0; i < (num_objs_list[0]); i++) {
         if (obj_in_way(&front_objects[i])) {
-            return i;
+            return (i);
         }
 
     }
+
 
     return 0;
 }
@@ -254,9 +262,49 @@ int move()
  *  TURN()
  *
  */
+#define HYP(a,b) pow((pow(a,2)+pow(b,2)),.5)
+int move_around_obj(int objInd, oi_t * sensor) {
+    scanned_obj * obj= &front_objects[objInd];
+    double radiansToTurn= tanh((((double)obj->straight_width/2)+20 )/(double)obj->distance);
+    rotate_degrees(sensor,RAD_TO_DEG(radiansToTurn));
+    double distanceToGo=(double)(HYP(obj->straight_width/2,obj->distance));
 
+    unsigned int moveStopped= actually_move_until_detect_obstacle(sensor, distanceToGo);
+    ///if we detect anything, we backtrack and try the left side
+    if (FieldEdgeFound || moveStopped) {
+        move_specific_distance(sensor, -(moveStopped>>8));
+    }
+
+
+    return 0;
+}
+
+
+///after we get to the middle
 int find_endpoint(oi_t * sensor)
 {
+    ///scan
+    ///
+    scanned_obj inTheWay[3];
+    int scn=scan(inTheWay);
+    if (scn==CLEAR_SPACE) {
+        actually_move_until_detect_obstacle(sensor, 56);
+    }
+    else if (-2) {
+        ///found the endpoint
+    }
+    else {
+        //for now go straight after moving around the object, but it would be better to move around it
+        move_around_obj(scn,sensor);
+    }
+
+
+
+
+
+
+}
+    /*
     ///starts from corner
     int current_deg = 0;
     int target_found = 0;
@@ -321,7 +369,8 @@ int find_endpoint(oi_t * sensor)
             }
         }
     }
-}
+}*/
+
 /*
  FLAGS:
  Cliff_status
@@ -332,7 +381,6 @@ int find_endpoint(oi_t * sensor)
  DONE
  }
  cliff_hits last_edge_was_border
-
  FUNCTION Scan_field(direction)
  {
  while (!target_found)
@@ -375,7 +423,6 @@ int find_endpoint(oi_t * sensor)
  }
  last_edge_was_border = true;
  }
-
  turn
  scan()
  if (cliff_status == DONE)

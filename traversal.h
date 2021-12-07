@@ -22,4 +22,5 @@ faceMiddle(oi_t * sensor, int * cur, int * gridX);
 move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY);
 go_around_big_obstacles(oi_t *sensor);
 find_endpoint(oi_t * sensor);
+move_around_obj(int objInd, oi_t * sensor);
 #endif /* TRAVERSAL_H_ */

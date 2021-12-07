@@ -76,10 +76,17 @@ void uart_sendChar(char data)
 
 void botprintf(char *format, ...)
 {
+
+   /* va_list args;
+    va_start(args,format);
+    */
+    // Bot print stopped working for doubles suddenly. but it works when you use %0.7f instead of %lf
+    ///
+
     va_list args;
     va_start(args, format);
-    char tosend[1024];
-    vsnprintf(tosend, 1024, format, args);
+    char tosend[254];
+    vsnprintf(tosend, 254, format, args);
     uart_sendStr(tosend);
     va_end(args);
 
