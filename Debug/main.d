@@ -32,6 +32,7 @@ main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/machine
 main.obj: ../movement.h
 main.obj: ../botconfig.h
 main.obj: ../scan.h
+main.obj: ../imu.h
 
 ../main.c:
 
@@ -96,4 +97,6 @@ C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/machine/_limits.h
 ../botconfig.h:
 
 ../scan.h:
+
+../imu.h:
 

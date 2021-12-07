@@ -17,6 +17,7 @@
 #include "uart.h"
 #include "botconfig.h"
 #include "scan.h"
+#include "imu.h"
 
 ///used with simplescam.
 ///mimics the old scan structure from cybotscan
@@ -34,8 +35,21 @@ int main(void){
     uart_init(115200);
     SonarConfig();
     uart_interrupt_init();
-    botprintf("battery: %d out of %d\n\r",interface->batteryCharge,interface->batteryCapacity);
+
+
+
+    botprintf("battery: %d out of %d\n\r",interface->batteryCharge,interface->batteryCapacity );
     lcd_printf("battery: %d out of %d\n",interface->batteryCharge,interface->batteryCapacity);
+    //configure_wheels(interface);
+    init_imu();
+    int county=10;
+    while (county>0) {
+        county--;
+    unsigned int value;
+    get_uint(ACC_X_L, &value);
+    botprintf("plase work: %d, %X\n\r",value,value);
+    timer_waitMillis(50);
+    }
 
 
     scanned_obj objects[4];
@@ -78,13 +92,7 @@ int main(void){
                 case '2':
                     //scan tests
                     botprintf("scan tests");
-             struct scan_handle scn;
-             simpleScan(180, &scn);
-             printScn(&scn);
-             simpleScan(0, &scn);
-             printScn(&scn);
-             simpleScan(90, &scn);
-             printScn(&scn);
+
                     break;
                 case '3':
                     ///test the cliff sensors functions
@@ -96,15 +104,28 @@ int main(void){
 
                     break;
                 case '4':
-
-                    test_object_shit();
+                 //   test_scans_print_scans();
+                   // test_object_shit(interface);
                     break;
 
                 case '5':
                     FindStartPostition(interface);
-                default:
-
                     break;
+                case 'g':
+                    ;
+
+
+                    unsigned int value;
+                       get_uint(ACC_X_L, &value);
+                       botprintf("plase work: %d, %X\n\r",value,value);
+                    break;
+                case 'Q':
+                    //oi_shutoff_init();
+                    oi_free(interface);
+                    break;
+                default:
+                   break;
+
 
                 }
 

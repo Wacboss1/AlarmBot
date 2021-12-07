@@ -17,7 +17,13 @@
 #include "button.h"
 #include "uart.h"
 #include "scan.h"
+#include "traversal.h"
+#include "math.h"
 
+#define DEG_TO_RAD(a) a*(M_PI*2/360)
+#define RAD_TO_DEG(a) a*(360)/(M_PI*2)
+
+//int lowestCliffX,lowestCliffY,
 
 //#include "distancesensor.h"
 
@@ -25,20 +31,24 @@
 
 extern scanned_obj front_objects[40];
 extern scan_handle all_scans[180];
-int num_objs_list[4];
+extern int num_objs_list[4];
 
+extern int FieldEdgeFound;
 
-int test_object_shit() {
-    int scn = scan();
-    if (scn>-1){
-        lcd_printf("Found object %d",scn);
-    }
-    else if(scn==0) {
+int test_object_shit(oi_t * sensor){
+   // int scn = scan();
+    //if (scn>-1){
+    //    lcd_printf("Found object %d",scn);
+   // }
+   // else if(scn==0) {
 
-    }
+//    }
+    go_around_big_obstacles(sensor);
+
     while (button_getButton()==0) {
 
     }
+
     return 0;
 
 }
@@ -75,13 +85,17 @@ int obj_in_way(scanned_obj * obj) {
 ///returns -2 if found endpoint
 ///returns index of object if we need to movearound object
 //movearound an object
-
+#define CLEAR_SPACE -1
+#define ENDPOINT_FOUND -2
 int scan()
 {
 
     //scan_handle scn;
-    scan180_alarmbot(front_objects);
+    scan180_alarmbot();
 
+    ///process objects
+    objsFrmScns(front_objects);
+    print_found_objects(front_objects);
     int i;
 
     ///if no objects detected return 1
@@ -90,20 +104,18 @@ int scan()
     }
     for (i=0; i < (num_objs_list[0]); i++) {
         if (obj_in_way(&front_objects[i])) {
-            return i;
+            return (i);
         }
 
     }
+
+
     return 0;
 }
 
-#define FORWARD_OA 0
-#define RIGHT_OA 1
-#define BACK_OA 2
-#define LEFT_OA 3
-#define CELLSIZE_OA 50
 
-void turnRight90(oi_t *sensor, int * cur) {
+
+int turnRight90(oi_t *sensor, int * cur) {
     if (*cur==3){
         *cur=0;
     }
@@ -112,7 +124,7 @@ void turnRight90(oi_t *sensor, int * cur) {
     }
     turn_robot_degrees(sensor, -90);
 }
-void turnLeft90(oi_t *sensor, int * cur) {
+int turnLeft90(oi_t *sensor, int * cur) {
     if (*cur==0){
         *cur=3;
     }
@@ -122,7 +134,7 @@ void turnLeft90(oi_t *sensor, int * cur) {
     turn_robot_degrees(sensor, 90);
 }
 
-void faceMiddle(oi_t * sensor, int * cur, int * gridX) {
+int faceMiddle(oi_t * sensor, int * cur, int * gridX) {
     int turnD;
     ///face left
     if (*gridX >0) {
@@ -165,10 +177,11 @@ void faceMiddle(oi_t * sensor, int * cur, int * gridX) {
         *cur=RIGHT_OA;
     }
     turn_robot_degrees(sensor, turnD);
+    return 0;
 
 }
 
-void move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY) {
+int move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY) {
     switch (*cur)  {
     case FORWARD_OA:
         *gridY+=CELLSIZE_OA;
@@ -183,14 +196,15 @@ void move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY) {
             *gridX-=CELLSIZE_OA;
     }
     actually_move_until_detect_obstacle(sensor, CELLSIZE_OA);
+    return 0;
 }
 
 int go_around_big_obstacles(oi_t *sensor) {
 
-    int gridX;
-    int gridY;
-    int directionfacing; //0forward,1right,2back,3left
-    int scanresult;
+    int gridX=0;
+    int gridY=0;
+    int directionfacing=0; //0forward,1right,2back,3left
+    int scanresult=0;
     do {
         if (gridX==0) {
         //turn to face the right
@@ -204,7 +218,11 @@ int go_around_big_obstacles(oi_t *sensor) {
         else if (gridY==0) {
             turnLeft90(sensor, &directionfacing);
             ///scan area to the right
+            if (directionfacing!=BACK_OA)
             scanresult=scan();
+            else {
+                scanresult=-1;
+            }
             if (scanresult==-1) {
             move_forward_OA(sensor, &directionfacing, &gridX, &gridY);
             }
@@ -244,9 +262,49 @@ int move()
  *  TURN()
  *
  */
+#define HYP(a,b) pow((pow(a,2)+pow(b,2)),.5)
+int move_around_obj(int objInd, oi_t * sensor) {
+    scanned_obj * obj= &front_objects[objInd];
+    double radiansToTurn= tanh((((double)obj->straight_width/2)+20 )/(double)obj->distance);
+    rotate_degrees(sensor,RAD_TO_DEG(radiansToTurn));
+    double distanceToGo=(double)(HYP(obj->straight_width/2,obj->distance));
 
+    unsigned int moveStopped= actually_move_until_detect_obstacle(sensor, distanceToGo);
+    ///if we detect anything, we backtrack and try the left side
+    if (FieldEdgeFound || moveStopped) {
+        move_specific_distance(sensor, -(moveStopped>>8));
+    }
+
+
+    return 0;
+}
+
+
+///after we get to the middle
 int find_endpoint(oi_t * sensor)
 {
+    ///scan
+    ///
+    scanned_obj inTheWay[3];
+    int scn=scan(inTheWay);
+    if (scn==CLEAR_SPACE) {
+        actually_move_until_detect_obstacle(sensor, 56);
+    }
+    else if (-2) {
+        ///found the endpoint
+    }
+    else {
+        //for now go straight after moving around the object, but it would be better to move around it
+        move_around_obj(scn,sensor);
+    }
+
+
+
+
+
+
+}
+    /*
     ///starts from corner
     int current_deg = 0;
     int target_found = 0;
@@ -311,7 +369,8 @@ int find_endpoint(oi_t * sensor)
             }
         }
     }
-}
+}*/
+
 /*
  FLAGS:
  Cliff_status
@@ -322,7 +381,6 @@ int find_endpoint(oi_t * sensor)
  DONE
  }
  cliff_hits last_edge_was_border
-
  FUNCTION Scan_field(direction)
  {
  while (!target_found)
@@ -365,7 +423,6 @@ int find_endpoint(oi_t * sensor)
  }
  last_edge_was_border = true;
  }
-
  turn
  scan()
  if (cliff_status == DONE)

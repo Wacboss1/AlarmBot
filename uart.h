@@ -29,6 +29,7 @@ char is_input();
 char getChar();
 ///this one is blocking if NULL input or waits for time in ms.
 char char_input(int wait_time_ms);
+void botprintf(char *format, ...);
 
 
 void uart_init(int baud);
