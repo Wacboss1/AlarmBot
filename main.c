@@ -42,14 +42,12 @@ int main(void){
     lcd_printf("battery: %d out of %d\n",interface->batteryCharge,interface->batteryCapacity);
     //configure_wheels(interface);
     init_imu();
-    int county=10;
-    while (county>0) {
-        county--;
-    unsigned int value;
-    get_uint(ACC_X_L, &value);
-    botprintf("plase work: %d, %X\n\r",value,value);
-    timer_waitMillis(50);
-    }
+    int error=init_high_speed();
+        if (error) {
+            botprintf("failed init highspeed\n\r");
+            return;
+}
+
 
     //botprintf("plase work: %d, %X\n\r",value,value);
    // }
@@ -107,10 +105,11 @@ int main(void){
                 case 'g':
                     ;
 
+                    while (1) {
+                        signed short orientation[3];
+                         get_orientation(orientation);
+                    }
 
-                    unsigned int value;
-                       get_uint(ACC_X_L, &value);
-                       botprintf("plase work: %d, %X\n\r",value,value);
                     break;
                 case 'Q':
                     //oi_shutoff_init();

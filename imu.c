@@ -103,13 +103,15 @@ int send_byte(char add, char data) {
 
       // timer_waitMicros(5);
 
-       I2C1_MCS_R = (TR_IMU | STOP_IMU); /// (STOP,START,RUN) ?!?!?!??
+       I2C1_MCS_R = (0x5); //(TR_IMU | STOP_IMU); /// (STOP,START,RUN) ?!?!?!??
 
        //I2C1_MCS_R
     //   botprintf("waiting...");
-       while (I2C1_MCS_R &  0x40) //while busy
+       unsigned int count=timer_getMillis();
+       unsigned int max_count=count+100;
+       while ((I2C1_MCS_R &  0x40) && count<max_count) //while busy
            {
-
+           count=timer_getMillis();
        }
        error=(I2C1_MCS_R & 0xE);
        if (error) {
@@ -122,6 +124,60 @@ int send_byte(char add, char data) {
        return 0;
 
 }
+
+
+int get_bytes(char add, char buffer[], int countC) {
+    int error = access_addr(add);
+           if (error) {
+               botprintf("error: %d\n\r",error);
+               return error;
+           }
+
+           I2C1_MSA_R = (DEFAULTI2C<<1) | 0x1;
+           int i=0;
+
+               /*
+                * #define STOP_IMU I2C_MCS_STOP             //0x4
+#define START_IMU I2C_MCS_START //0x2
+#define TR_IMU I2C_MCS_RUN             // 0x1
+#define ACK_IMU I2C_MCS_ACK             // 0x8
+                *
+                */
+           I2C1_MSA_R = (DEFAULTI2C<<1) | 0x1;
+
+               I2C1_MCS_R = 0xB; //(I2C_MCS_START | I2C_MCS_RUN | I2C_MCS_ACK);  ///(START | ACK| TR)
+               while (I2C1_MCS_R &  0x1) //while busy
+                                     {
+
+                                      }
+                                          buffer[0]=I2C1_MDR_R;
+
+           for (i=1;i<(countC-1);i++){
+               //I2C1_MCS_R
+            //   botprintf("waiting...");
+          // I2C1_MSA_R = (DEFAULTI2C<<1) | 0x1;
+                     I2C1_MCS_R = (0x9); // RUN aknowledge
+               while (I2C1_MCS_R &  0x1) //while busy
+                   {
+
+               }
+               buffer[i]=I2C1_MDR_R;
+           }
+           //I2C1_MSA_R = (DEFAULTI2C<<1) | 0x1;
+                               I2C1_MCS_R = (0x5); // RUN STOP
+                         while (I2C1_MCS_R &  0x1) //while busy
+                             {
+
+                         }
+                         buffer[countC-1]=I2C1_MDR_R;
+                         while (I2C1_MCS_R & 0x40) { //while the bus is busy, wati
+
+                         }
+                         return 0;
+
+
+
+}
 int get_uint(char add, unsigned int * data) {
     int error=0;
         error = access_addr(add);
@@ -131,7 +187,7 @@ int get_uint(char add, unsigned int * data) {
         }
 
         I2C1_MSA_R = (DEFAULTI2C<<1 | 0x1); ///recieve
-
+        char dumb = (START_IMU| TR_IMU | ACK_IMU);
        I2C1_MCS_R = (START_IMU| TR_IMU | ACK_IMU) ; ///first byte of data: start(again), TR, Ack
        while (I2C1_MCS_R &  0x40) //while busy
           {
@@ -174,7 +230,7 @@ int get_byte(char add, char * data) {
 //    I2C1_MDR_R=0;
 
     I2C1_MSA_R =( DEFAULTI2C<<1) | 0x1; ///recieve
-   I2C1_MCS_R = (START_IMU |TR_IMU) ;
+   I2C1_MCS_R = (START_IMU |TR_IMU|STOP_IMU) ;
    while (I2C1_MCS_R &  0x40) //while busy
       {
 
@@ -264,6 +320,7 @@ int init_imu() {
     return 0;
 }
 
+int get_bytes_fast();
 
 
 int send_msg_imu(char * val[]){
@@ -279,11 +336,54 @@ int read_imu() {
 int get_acc() {
     return 0;
 }
+int init_high_speed() {
+    send_byte(OPR_MODE, M4G_MODE);
+        timer_waitMillis(30);
+        int test_data= get_byte(OPR_MODE, &test_data);
+        if (test_data!=M4G_MODE) {
+            botprintf("Nope!!!! data: %u\n\r",test_data);
+        }
 
-int get_gyro() {
-    return 0;
+}
+int get_gyro(char gyrodata[]) {
+
+    int error = get_bytes(GYRO_X_L, gyrodata, 6);
+    if (error) {
+        botprintf("error in get gyro: %d",error);
+        botprintf("%u,%u,%u\n\r",gyrodata[0],gyrodata[2],gyrodata[4]);
+
+        return error;
+    }
+   // botprintf("%u,%u,%u\n\r",gyrodata[0],gyrodata[2],gyrodata[4]);
+
+     signed short x=gyrodata[0]+ (((unsigned int) gyrodata[1])<<8);
+     signed short y=gyrodata[2]+ (((unsigned int) gyrodata[3])<<8);
+     signed short z=gyrodata[4]+ (((unsigned int) gyrodata[5])<<8);
+    botprintf("%d,%d,%d\n\r",x,y,z);
+
+
+    return error;
 }
 
+int get_orientation(signed short buffer[]) {
+    char charbuff[6];
+    int error = get_bytes(HEADING_L, charbuff, 6);
+       if (error) {
+           botprintf("error in get gyro: %d",error);
+           botprintf("%u,%u,%u\n\r",charbuff[0],charbuff[2],charbuff[4]);
+
+           return error;
+       }
+      // botprintf("%u,%u,%u\n\r",gyrodata[0],gyrodata[2],gyrodata[4]);
+
+        buffer[0]=charbuff[0]+ (((unsigned int) charbuff[1])<<8);
+        buffer[1]=charbuff[2]+ (((unsigned int) charbuff[3])<<8);
+        buffer[2]=charbuff[4]+ (((unsigned int) charbuff[5])<<8);
+       botprintf("%d,%d,%d\n\r",buffer[0],buffer[1],buffer[2]);
+
+
+       return error;
+}
 
 
 int parse_packets(char packets[]) {
