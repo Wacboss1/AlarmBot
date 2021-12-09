@@ -49,5 +49,6 @@ int IRRawScan(int angle);
 int IRDistanceScan(int angle);
 int GetActualDistance(int x);
 void output_scan_data(scanned_obj  objectlist[]);
+void print_found_objects(scanned_obj * objectlist);
 int test_scans_print_scans();
 #endif /* SCAN_H_ */

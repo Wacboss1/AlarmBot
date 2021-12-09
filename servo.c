@@ -126,9 +126,9 @@ int turn_servo_deg(char degrees)
 
 int move_servo(unsigned int clck_cycle)
 {
-    timer_waitMillis(100);
+    //timer_waitMillis(100);
     TIMER1_TBMATCHR_R = clck_cycle;
-    timer_waitMillis(100);
+   // timer_waitMillis(100);
     return 0;
 }
 

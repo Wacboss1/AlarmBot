@@ -24,7 +24,7 @@ scan_handle all_scans[180];
 
 #define IR_TO_DIST(a)  (a)
 
-#define USE_DUMMYSCANS
+//#define USE_DUMMYSCANS
 #ifdef USE_DUMMYSCANS
 char scan180_alarmbot() {
     scan_handle dummy_scans[180] = {{0,141,148},{0,0,0},{0,0,0},{0,0,0},{0,74,134},{0,0,0},{0,0,0},{0,0,0},{0,66,177},{0,0,0},{0,0,0},{0,0,0},{0,141,177},{0,0,0},{0,0,0},{0,0,0},{0,141,166},{0,0,0},{0,0,0},{0,0,0},{0,61,177},{0,0,0},{0,0,0},{0,0,0},{0,73,170},{0,0,0},{0,0,0},{0,0,0},{0,85,171},{0,0,0},{0,0,0},{0,0,0},{0,86,160},{0,0,0},{0,0,0},{0,0,0},{0,67,170},{0,0,0},{0,0,0},{0,0,0},{0,73,121},{0,0,0},{0,0,0},{0,0,0},{0,95,171},{0,0,0},{0,0,0},{0,0,0},{0,141,92},{0,0,0},{0,0,0},{0,0,0},{0,261,76},{0,0,0},{0,0,0},{0,0,0},{0,291,115},{0,0,0},{0,0,0},{0,0,0},{0,141,127},{0,0,0},{0,0,0},{0,0,0},{0,72,176},{0,0,0},{0,0,0},{0,0,0},{0,139,176},{0,0,0},{0,0,0},{0,0,0},{0,141,176},{0,0,0},{0,0,0},{0,0,0},{0,28,122},{0,0,0},{0,0,0},{0,0,0},{0,27,25},{0,0,0},{0,0,0},{0,0,0},{0,36,18},{0,0,0},{0,0,0},{0,0,0},{0,20,17},{0,0,0},{0,0,0},{0,0,0},{0,20,16},{0,0,0},{0,0,0},{0,0,0},{0,20,16},{0,0,0},{0,0,0},{0,0,0},{0,20,16},{0,0,0},{0,0,0},{0,0,0},{0,20,17},{0,0,0},{0,0,0},{0,0,0},{0,27,19},{0,0,0},{0,0,0},{0,0,0},{0,27,36},{0,0,0},{0,0,0},{0,0,0},{0,131,97},{0,0,0},{0,0,0},{0,0,0},{0,129,107},{0,0,0},{0,0,0},{0,0,0},{0,127,155},{0,0,0},{0,0,0},{0,0,0},{0,131,176},{0,0,0},{0,0,0},{0,0,0},{0,130,174},{0,0,0},{0,0,0},{0,0,0},{0,131,150},{0,0,0},{0,0,0},{0,0,0},{0,130,122},{0,0,0},{0,0,0},{0,0,0},{0,131,114},{0,0,0},{0,0,0},{0,0,0},{0,131,141},{0,0,0},{0,0,0},{0,0,0},{0,129,114},{0,0,0},{0,0,0},{0,0,0},{0,153,177},{0,0,0},{0,0,0},{0,0,0},{0,168,177},{0,0,0},{0,0,0},{0,0,0},{0,141,177},{0,0,0},{0,0,0},{0,0,0},{0,222,177},{0,0,0},{0,0,0},{0,0,0},{0,141,177},{0,0,0},{0,0,0},{0,0,0},{0,141,177},{0,0,0},{0,0,0},{0,0,0}};
@@ -47,7 +47,7 @@ char scan180_alarmbot()
 
 
         // ========Do the whole first scan===========
-        int num_samples = 3;
+        int num_samples = 1;
         float averaged_ir_value = 0;
         scan_handle temp;
         for (i = 0; i < 180; i += deg_multiplier)
@@ -56,7 +56,6 @@ char scan180_alarmbot()
             int j = 0;
             for (j = 0; j < num_samples; j++)
             {
-                ///if using our adc, only use the cybotscan once to aim the servo
                 if (  j==0) {
                 _SCAN(i, &temp);
                 }
@@ -104,15 +103,23 @@ int test_scans_print_scans() {
 }
 
 int simpleScan(char deg, scan_handle * scn) {
+    unsigned int startTime = timer_getMillis();
     turn_servo_deg(deg);
+    botprintf("Time it took to move servo %u\n\r", (timer_getMillis()-startTime));
     ///waiting for a long time
     ///i reccomend guessing the amount of time it will take the servo to move (current_deg - new_deg) * (10 milli per degree)
     //timer_waitMillis(500);
  //   timer_waitMillis()
     scn->angle=deg;
     Ping png;
+    startTime = timer_getMillis();
     scn->ping = GetSonarDistance(&png);
+    botprintf("Time it took to do sonar:  %u\n\r", (timer_getMillis()-startTime));
+    startTime = timer_getMillis();
+
     scn->IR = IRDistanceScan(deg);
+    botprintf("Time it took to do distance scan: %u\n\r", (timer_getMillis()-startTime));
+
     return 0;
 }
 
@@ -169,8 +176,7 @@ char objsFrmScns(scanned_obj *objarray)
 
             objarray[num_objs_list[direction]].scan_direction = direction;
 
-            if (second_angle - first_angle > 0 && first_angle != 0
-                    && !(second_angle >= (180 - deg_multiplier)))
+            if ((second_angle - first_angle) > 0 )
                 num_objs_list[direction]++;
             else if (VERY_VERBOSE)
             {

@@ -10,6 +10,7 @@
 #include "manual_mode.h"
 #include "Timer.h"
 #include "scan.h"
+scanned_obj front_objects[40];
 
 void manual_mode(oi_t * sensor) {
     int ch =0;
@@ -39,6 +40,11 @@ void manual_mode(oi_t * sensor) {
     case 'k':
         rotateDegrees(sensor, -10);
 
+        break;
+    case 'y':
+        scan180_alarmbot();
+        objsFrmScns(front_objects);
+        print_found_objects(front_objects);
         break;
     case 'h':
         ;
