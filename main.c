@@ -26,7 +26,11 @@ int main(void){
     timer_init();
     oi_t* interface = oi_alloc();
     oi_init(interface);
-
+    ////reboot it to clear any f errors
+    oi_close();
+    oi_free(interface);
+    interface = oi_alloc();
+        oi_init(interface);
 
     adc_init();
     button_init();
@@ -41,21 +45,13 @@ int main(void){
     botprintf("battery: %d out of %d\n\r",interface->batteryCharge,interface->batteryCapacity );
     lcd_printf("battery: %d out of %d\n",interface->batteryCharge,interface->batteryCapacity);
     //configure_wheels(interface);
+
     init_imu();
     int error=init_high_speed();
         if (error) {
             botprintf("failed init highspeed\n\r");
             return;
 }
-
-
-    //botprintf("plase work: %d, %X\n\r",value,value);
-   // }
-    ///this is a bunch of tests, we can put it into a function later sometime
-        //
-        //uart
-        //char c = char_input(NULL);
-        //botprintf("%c",c);
 
     //TODO check if cliffSignal is greater than 2700 for white tape
 
@@ -67,6 +63,8 @@ int main(void){
 
     ///servo calibration tests
     turn_servo_deg(0);
+
+    manual_mode(interface);
 
 
         while (1) {
@@ -114,6 +112,9 @@ int main(void){
                 case 'Q':
                     //oi_shutoff_init();
                     oi_free(interface);
+                    break;
+                case 'M':
+                    manual_mode(interface);
                     break;
                 default:
                    break;

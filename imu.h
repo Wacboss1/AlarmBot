@@ -7,7 +7,7 @@
 
 #ifndef IMU_H_
 #define IMU_H_
-#define DEFAULTI2C 0b00101001
+#define DEFAULTI2C  0b00101001/// 0b00101001
                       ///0x29
 
 
@@ -23,15 +23,35 @@
 #define ACC_X_U 0x09
 #define ACC_X_L 0x08
 #define HEADING_L 0x1A
+#define SYS_ERR 0x3A
+/*
+ * Read : 0 No error
+1 Peripheral initialization error
+2 System initialization error
+3 Self test result failed
+4 Register map value out of range
+5 Register map address out of range
+6 Register map write error
+7 BNO low power mode not available for selected operation mode
+8 Accelerometer power mode not available
+9 Fusion algorithm configuration error
+A Sensor configuration error
+ */
 
+
+#define UNIT_SELECT 0x3B
+
+#define GET_EUL_UNIT(a) ((a>>2) & 0x1) ///degrees =0. radians = 1
 
 #define RECIEVE_I2C 0x1
 #define TRANSMIT_I2C 0x0
 #define OPR_MODE 0x3D  ///the defaualt value = config = 0x1C write to bits 3-0
+#define SYS_TRIGGER 0x3F /// set bit 5 to reset the system
+
 ///operational modes
 #define GYRO_ACCR_MODE 0b0101   ///this is raw output with no hardware calcations
 #define M4G_MODE 0b1010 ///this is the good one for getting orientation
-
+#define NDOF_MODE 0b1100
 #define POWER_MODE 0x3E   //should be 0x00 by default
 int init_imu();
 //unsigned int get_16bit(char add);
@@ -40,4 +60,7 @@ int get_bytes(char add, char buffer[], int countC);
 int get_gyro(char gyrodata[]);
 int init_high_speed();
 int get_orientation(signed short buffer[]);
+int get_rotation(signed short * data);
+int get_imu_error();
+
 #endif /* IMU_H_ */

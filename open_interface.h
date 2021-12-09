@@ -140,6 +140,10 @@ void oi_free(oi_t *self);
 ///Initialize open interface
 void oi_init(oi_t *self);
 
+
+//i made this
+void oi_quick_update(oi_t *self);
+
 void oi_close();
 
 ///Update sensor data

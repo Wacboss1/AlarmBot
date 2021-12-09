@@ -170,7 +170,22 @@ void oi_close()
     oi_setWheels(0, 0);
     oi_uartSendChar(OI_OPCODE_STOP);
 }
+/// Update all sensor but don't store the information so that we don't crash all the shit, but don't take forever
+void oi_quick_update(oi_t *self)
+{
+    uint8_t sensorBuffer[SENSOR_PACKET_SIZE];
 
+    // Query list of sensors
+    oi_uartSendChar(OI_OPCODE_SENSORS);
+    oi_uartSendChar(OI_SENSOR_PACKET_GROUP100);
+
+    // Read all the sensor data
+    uint8_t i;
+    for (i = 0; i < SENSOR_PACKET_SIZE; i++) {
+        // read each sensor byte
+        sensorBuffer[i] = oi_uartReceive();
+    }
+}
 /// Update all sensor and store in oi_t struct
 void oi_update(oi_t *self)
 {

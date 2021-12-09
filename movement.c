@@ -8,11 +8,129 @@
 #include "movement.h"
 #include "uart.h"
 #include <math.h>
+
+#define PRINT_EULER_DATA 1
+
+#include "imu.h"
+
 int current_deg = 0;
 
 static double POWER_OFFSET = 1;
 extern volatile char data_received;
 extern volatile char data_received_flag;
+
+void print_euler() {
+/*    signed short orientation[3];
+    get_orientation(orientation);
+    botprintf("%d,%d,%d\n\r",orientation[0],orientation[1],orientation[2]);
+*/
+    signed short data;
+    get_rotation(&data);
+    botprintf("%d\n\r",(int)(data/16));
+
+}
+unsigned short angleTurned(unsigned int * totalTraveled) {
+    static unsigned short lastval;
+
+}
+void rotate_90_degrees( oi_t * sensor) {
+    unsigned short curRot;
+    get_rotation(&curRot);
+    unsigned short targetAngle = (((DEG_TO_SHORT(90)+curRot)) % 5760);
+    TURN_RIGHT;
+    unsigned short angle_turned=curRot;
+    unsigned short first_angle=curRot;
+    int threshold = 10;
+    botprintf("is curRot larger than %d, and smaller than %d\n\r",targetAngle-threshold,targetAngle+threshold );
+
+    botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
+
+   //while (!((targetAngle-threshold)<curRot) &&  ((targetAngle+threshold)>curRot)){
+    while (abs(curRot-targetAngle)>threshold){
+    get_rotation(&curRot);
+   // oi_quick_update(sensor);
+//        botprintf("is curRot larger than %d, and smaller than %d\n\r",targetAngle-threshold,targetAngle+threshold );
+
+        botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
+
+    }
+    oi_setWheels(0, 0);
+    //oi_setWheels(10,-10);
+    timer_waitMillis(100);
+    oi_update(sensor);
+
+    get_rotation(&curRot);
+
+    if (abs(curRot-targetAngle)>5) {
+        oi_setWheels(20,-20);
+    }
+    unsigned short newangle= (targetAngle + 10)%5760;
+    while (abs(curRot-(newangle))>2){
+    get_rotation(&curRot);
+
+        botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
+
+    }
+    oi_setWheels(0, 0);
+    timer_waitMillis(100);
+    get_rotation(&curRot);
+
+         botprintf("curr: %u, target: %u, new target: %u \n\r",curRot,targetAngle,newangle);
+
+
+    oi_update(sensor);
+
+
+}
+/*
+ *   unsigned int stoptime = timer_getMicros();
+    oi_setWheels(0, 0);
+    stoptime = timer_getMicros() - stoptime;
+        botprintf("time to send stop: %d\n\r",stoptime);
+
+ */
+#define IMU_360 5760
+void rotate_degrees(int deg) {
+    int negative = (deg<0);
+    unsigned short curRot;
+        get_rotation(&curRot);
+        unsigned int  targetAngle;
+        if (negative) {
+        targetAngle = ((unsigned int) IMU_360)-( (-DEG_TO_SHORT((deg % 360)) + curRot) % IMU_360); ///modulo our target value so its always within 360 degrees
+        }
+        else {
+            targetAngle = (DEG_TO_SHORT((deg % 360)) + curRot) % IMU_360; ///modulo our target value so its always within 360 degrees
+
+        }
+    int ourprogress=0;
+
+    if (negative) {
+        TURN_RIGHT;}
+        else {
+            TURN_LEFT;
+        }
+    botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
+
+    while ((targetAngle > (curRot+4) )||(targetAngle < (curRot-4) )) {
+        //oi_update(sensor);
+
+        botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
+        if ((targetAngle > (curRot+4) )) {
+            TURN_RIGHT;
+
+        }
+        else if((targetAngle < (curRot-4) )) {
+            TURN_LEFT;
+
+        }
+    get_rotation(&curRot);
+
+    }
+        oi_setWheels(0, 0);
+
+}
+
+
 void move_around_obstacle(oi_t *sensor, char leftBumper, char rightBumper);
 
 //Added defines for turnrobot_degrees function
@@ -100,8 +218,10 @@ int detect_cliff(oi_t * sensor) {
 
 }
 
+
 void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
 {
+
 
     current_deg += degrees_to_turn;
 
@@ -124,6 +244,8 @@ void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
         oi_setWheels(TURNING_FWD_SPD, TURNING_BKWD_SPD);
         while (angle_turned <( degrees_to_turn - degrees_offset))
         {
+            print_euler();
+
             oi_update(sensor);
             angle_turned += sensor->angle;
             if (data_received_flag && data_received == 't')
@@ -138,6 +260,8 @@ void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
         oi_setWheels(TURNING_BKWD_SPD, TURNING_FWD_SPD);
         while (angle_turned > (degrees_to_turn + degrees_offset))
         {
+            print_euler();
+
             oi_update(sensor);
             angle_turned += sensor->angle;
             if (data_received_flag && data_received == 't')

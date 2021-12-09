@@ -16,6 +16,7 @@ ORDERED_OBJS += \
 "./imu.obj" \
 "./lcd.obj" \
 "./main.obj" \
+"./manual_mode.obj" \
 "./movement.obj" \
 "./open_interface.obj" \
 "./scan.obj" \
@@ -168,8 +169,8 @@ alarmbot.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "Timer.obj" "adc.obj" "button.obj" "imu.obj" "lcd.obj" "main.obj" "movement.obj" "open_interface.obj" "scan.obj" "servo.obj" "sonar.obj" "tm4c123gh6pm_startup_ccs.obj" "traversal.obj" "uart.obj" 
-	-$(RM) "Timer.d" "adc.d" "button.d" "imu.d" "lcd.d" "main.d" "movement.d" "open_interface.d" "scan.d" "servo.d" "sonar.d" "tm4c123gh6pm_startup_ccs.d" "traversal.d" "uart.d" 
+	-$(RM) "Timer.obj" "adc.obj" "button.obj" "imu.obj" "lcd.obj" "main.obj" "manual_mode.obj" "movement.obj" "open_interface.obj" "scan.obj" "servo.obj" "sonar.obj" "tm4c123gh6pm_startup_ccs.obj" "traversal.obj" "uart.obj" 
+	-$(RM) "Timer.d" "adc.d" "button.d" "imu.d" "lcd.d" "main.d" "manual_mode.d" "movement.d" "open_interface.d" "scan.d" "servo.d" "sonar.d" "tm4c123gh6pm_startup_ccs.d" "traversal.d" "uart.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

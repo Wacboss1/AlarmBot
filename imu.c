@@ -44,6 +44,17 @@
  *also has error bit
  *also
  */
+static char imu_error_codes[11][100] = { "0 No error",
+                                       "1 Peripheral initialization error",
+                                       "2 System initialization error",
+                                       "3 Self test result failed",
+                                       "4 Register map value out of range",
+                                       "5 Register map address out of range",
+                                       "6 Register map write error",
+                                       "7 BNO low power mode not available for selected operation mode",
+                                       "8 Accelerometer power mode not available",
+                                       "9 Fusion algorithm configuration error",
+                                       "A Sensor configuration error"};
 
 typedef struct imu_handle {
     int accX;
@@ -62,14 +73,38 @@ typedef struct imu_handle {
 #define ACK_IMU I2C_MCS_ACK             // 0x8
 
 
+
+int get_imu_error() {
+    char data;
+    int error = get_byte(SYS_ERR, &data);
+    botprintf("%s\n\r",imu_error_codes[data]);
+    return error;
+}
+int wait_while_bus_busy(int milli){
+    unsigned int count=timer_getMillis();
+      unsigned int max_count=count+milli;
+      while ((I2C1_MCS_R &  0x40) )//&& (count<max_count)) //while busy
+          {
+          count=timer_getMillis();
+      }
+      if (count>max_count) {
+          return 1;
+      }
+      else {
+          return 0;
+      }
+      }
+
 int access_addr(char add) {
    // timer_waitMicros(5);
+ //   timer_waitMicros(5);
+
     int error=0;
       I2C1_MSA_R = (DEFAULTI2C<<1); //address goes to bits 7-1, what sort of behavior is bit 0
     //  botprintf("should be the same: %X and %X and should be 0x52\n\r",I2C1_MSA_R,DEFAULTI2C<<1);
 
       I2C1_MDR_R = add; ///lololol data
-      I2C1_MCS_R = (TR_IMU | START_IMU);//7 or 3 /// (STOP,START,RUN) ?!?!?!??
+      I2C1_MCS_R = 3;// (TR_IMU | START_IMU);//7 or 3 /// (STOP,START,RUN) ?!?!?!??
       ///bit 0 === master can t/r
       // bit 1 ---- generate START
       /// bit 2 ---- generate STOP
@@ -91,28 +126,28 @@ int access_addr(char add) {
       }
       return 0;
 }
+
+int debugging_reset() {
+
+
+}
 int send_byte(char add, char data) {
+
         int error = access_addr(add);
         if (error) {
             botprintf("error: %d\n\r",error);
             return error;
         }
-        I2C1_MSA_R = (DEFAULTI2C<<1);
+     //   I2C1_MSA_R = (DEFAULTI2C<<1);
        I2C1_MDR_R = data; /// data
        //I2C1_MCS_R &=0xFFFFFFE0;
 
-      // timer_waitMicros(5);
 
-       I2C1_MCS_R = (0x5); //(TR_IMU | STOP_IMU); /// (STOP,START,RUN) ?!?!?!??
+       I2C1_MCS_R = 5;// (I2C_MCS_RUN | I2C_MCS_STOP); /// (STOP,START,RUN) ?!?!?!??
 
        //I2C1_MCS_R
     //   botprintf("waiting...");
-       unsigned int count=timer_getMillis();
-       unsigned int max_count=count+100;
-       while ((I2C1_MCS_R &  0x40) && count<max_count) //while busy
-           {
-           count=timer_getMillis();
-       }
+      wait_while_bus_busy(100);
        error=(I2C1_MCS_R & 0xE);
        if (error) {
            botprintf("Error in send\n\r");
@@ -170,53 +205,14 @@ int get_bytes(char add, char buffer[], int countC) {
 
                          }
                          buffer[countC-1]=I2C1_MDR_R;
-                         while (I2C1_MCS_R & 0x40) { //while the bus is busy, wati
+                         wait_while_bus_busy(100);
 
-                         }
                          return 0;
 
 
 
 }
-int get_uint(char add, unsigned int * data) {
-    int error=0;
-        error = access_addr(add);
-        if (error) {
-            botprintf("error: %d\n\r",error);
-            return error;
-        }
 
-        I2C1_MSA_R = (DEFAULTI2C<<1 | 0x1); ///recieve
-        char dumb = (START_IMU| TR_IMU | ACK_IMU);
-       I2C1_MCS_R = (START_IMU| TR_IMU | ACK_IMU) ; ///first byte of data: start(again), TR, Ack
-       while (I2C1_MCS_R &  0x40) //while busy
-          {
-
-          }
-       error=(I2C1_MCS_R & 0xE);
-       if (error) {
-           botprintf("Errord\n\r");
-           return error;
-       }
-       *data=I2C1_MDR_R;
-       I2C1_MSA_R = (DEFAULTI2C<<1 | 0x1); ///recieve
-
-              I2C1_MCS_R = ( TR_IMU | STOP_IMU) ;
-              while (I2C1_MCS_R &  0x40) //while busy
-                 {
-
-                 }
-              error=(I2C1_MCS_R & 0xE);
-              if (error) {
-                  botprintf("Errord\n\r");
-                  return error;
-              }
-         *data+=I2C1_MDR_R<<8;
-
-
-
-        return error;
-}
 
 int get_byte(char add, char * data) {
     int error=0;
@@ -229,12 +225,11 @@ int get_byte(char add, char * data) {
     }
 //    I2C1_MDR_R=0;
 
-    I2C1_MSA_R =( DEFAULTI2C<<1) | 0x1; ///recieve
+    I2C1_MSA_R =(( DEFAULTI2C<<1) | 0x1); ///recieve
    I2C1_MCS_R = (START_IMU |TR_IMU|STOP_IMU) ;
-   while (I2C1_MCS_R &  0x40) //while busy
-      {
 
-      }
+   wait_while_bus_busy(100);
+
    error=(I2C1_MCS_R & 0xE);
    if (error) {
        botprintf("Errord\n\r");
@@ -273,12 +268,24 @@ int init_imu() {
     I2C1_MCR_R = 0x00000010; ///initiate as master
     I2C1_MTPR_R = 0x7;///clock speed. 100kbhz is what is in datasheet so just using that. maximum is 400khz   fuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
     //I2C1_MSA_R = (DEFAULTI2C<<1) | TRANSMIT_I2C; //address goes to bits 7-1, what sort of behavior is bit 0
-
+    I2C1_MCLKOCNT_R = 0xFF; ///this is the timeout limit
     char test_data=0;
 
 
+    timer_waitMillis(30);
+//    debugging_reset();
+        send_byte(SYS_TRIGGER, 0x10); ///reset the imu
+        timer_waitMillis(30);
+
+    get_imu_error();
+
+unsigned int   error = get_byte(OPR_MODE, &test_data);
+
+    botprintf("operation mode==data: %u\n\r",test_data);
+
     ///can only change values in config mode
     //7 ms to switch to operation mode. 19 ms to switch to configmode
+    /*
     timer_waitMillis(30);
     send_byte(OPR_MODE, GYRO_ACCR_MODE);
        timer_waitMillis(30);
@@ -317,32 +324,26 @@ int init_imu() {
      * OPR_MODE 0x3D  ///the defaualt value = config = 0x1C write to bits 3-0
 #define GYRO_ACCR_MODE
      */
-    return 0;
-}
-
-int get_bytes_fast();
-
-
-int send_msg_imu(char * val[]){
-    return 0;
-}
-
-int read_imu() {
-
 
     return 0;
 }
 
-int get_acc() {
-    return 0;
-}
+
+
 int init_high_speed() {
-    send_byte(OPR_MODE, M4G_MODE);
-        timer_waitMillis(30);
-        int test_data= get_byte(OPR_MODE, &test_data);
-        if (test_data!=M4G_MODE) {
-            botprintf("Nope!!!! data: %u\n\r",test_data);
+    int test_data;
+   // while ((test_data!=M4G_MODE) ) {
+    send_byte(OPR_MODE, NDOF_MODE);
+        timer_waitMillis(400);
+         test_data= get_byte(OPR_MODE, &test_data);
+
+        if (test_data!=NDOF_MODE ){
+            timer_waitMillis(400);
+            get_imu_error();
+        botprintf("Nope!!!! data: %u\n\r",test_data);
         }
+    //}
+return 0;
 
 }
 int get_gyro(char gyrodata[]) {
@@ -365,6 +366,19 @@ int get_gyro(char gyrodata[]) {
     return error;
 }
 
+int get_rotation(signed short * data) {
+    char charbuff[2];
+    //timer_waitMillis(1);
+
+    int error = get_bytes(HEADING_L, charbuff, 2);
+           if (error) {
+               botprintf("error in get gyro: %d",error);
+               //botprintf("%u,%u,%u\n\r",charbuff[0],charbuff[2],charbuff[4]);
+
+               return error;
+           }
+           *data=charbuff[0]+ (((signed short) charbuff[1])<<8);
+}
 int get_orientation(signed short buffer[]) {
     char charbuff[6];
     int error = get_bytes(HEADING_L, charbuff, 6);
@@ -376,10 +390,9 @@ int get_orientation(signed short buffer[]) {
        }
       // botprintf("%u,%u,%u\n\r",gyrodata[0],gyrodata[2],gyrodata[4]);
 
-        buffer[0]=charbuff[0]+ (((unsigned int) charbuff[1])<<8);
-        buffer[1]=charbuff[2]+ (((unsigned int) charbuff[3])<<8);
-        buffer[2]=charbuff[4]+ (((unsigned int) charbuff[5])<<8);
-       botprintf("%d,%d,%d\n\r",buffer[0],buffer[1],buffer[2]);
+        buffer[0]=charbuff[0]+ (((signed short) charbuff[1])<<8);
+        buffer[1]=charbuff[2]+ (((signed short) charbuff[3])<<8);
+        buffer[2]=charbuff[4]+ (((signed short) charbuff[5])<<8);
 
 
        return error;

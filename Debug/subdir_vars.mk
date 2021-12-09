@@ -15,6 +15,7 @@ C_SRCS += \
 ../imu.c \
 ../lcd.c \
 ../main.c \
+../manual_mode.c \
 ../movement.c \
 ../open_interface.c \
 ../scan.c \
@@ -31,6 +32,7 @@ C_DEPS += \
 ./imu.d \
 ./lcd.d \
 ./main.d \
+./manual_mode.d \
 ./movement.d \
 ./open_interface.d \
 ./scan.d \
@@ -47,6 +49,7 @@ OBJS += \
 ./imu.obj \
 ./lcd.obj \
 ./main.obj \
+./manual_mode.obj \
 ./movement.obj \
 ./open_interface.obj \
 ./scan.obj \
@@ -63,6 +66,7 @@ OBJS__QUOTED += \
 "imu.obj" \
 "lcd.obj" \
 "main.obj" \
+"manual_mode.obj" \
 "movement.obj" \
 "open_interface.obj" \
 "scan.obj" \
@@ -79,6 +83,7 @@ C_DEPS__QUOTED += \
 "imu.d" \
 "lcd.d" \
 "main.d" \
+"manual_mode.d" \
 "movement.d" \
 "open_interface.d" \
 "scan.d" \
@@ -95,6 +100,7 @@ C_SRCS__QUOTED += \
 "../imu.c" \
 "../lcd.c" \
 "../main.c" \
+"../manual_mode.c" \
 "../movement.c" \
 "../open_interface.c" \
 "../scan.c" \

@@ -29,6 +29,9 @@
 #define BOTHLEFT 0x3
 
 
+///imu conversions
+#define DEG_TO_SHORT(a) a*16
+
 typedef struct movement_data{
     double x;
     double y;
@@ -61,5 +64,8 @@ typedef struct movement_data{
     int update_move_data(int dist);
     int update_rotation_data(int deg);
 
+        ///rotate with the IMU
+    void rotate_degrees(int deg);
+    void rotate_90_degrees();
 #endif /* MOVEMENT_H_ */
 

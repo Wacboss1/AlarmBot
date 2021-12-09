@@ -266,7 +266,7 @@ int move()
 int move_around_obj(int objInd, oi_t * sensor) {
     scanned_obj * obj= &front_objects[objInd];
     double radiansToTurn= tanh((((double)obj->straight_width/2)+20 )/(double)obj->distance);
-    rotate_degrees(sensor,RAD_TO_DEG(radiansToTurn));
+    //rotate_degrees(sensor,RAD_TO_DEG(radiansToTurn));
     double distanceToGo=(double)(HYP(obj->straight_width/2,obj->distance));
 
     unsigned int moveStopped= actually_move_until_detect_obstacle(sensor, distanceToGo);
