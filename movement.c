@@ -90,46 +90,78 @@ void rotate_90_degrees( oi_t * sensor) {
 
  */
 #define IMU_360 5760
-void rotate_degrees(int deg) {
-    int negative = (deg<0);
+void rotateDegrees( oi_t * sensor, signed short signedDeg) {
+    unsigned short uDeg = abs(signedDeg);
+    char sign=0;
+    if (signedDeg<0) {
+        sign=1;
+        uDeg = 360 + (signedDeg % 360);
+    }
     unsigned short curRot;
-        get_rotation(&curRot);
-        unsigned int  targetAngle;
-        if (negative) {
-        targetAngle = ((unsigned int) IMU_360)-( (-DEG_TO_SHORT((deg % 360)) + curRot) % IMU_360); ///modulo our target value so its always within 360 degrees
-        }
-        else {
-            targetAngle = (DEG_TO_SHORT((deg % 360)) + curRot) % IMU_360; ///modulo our target value so its always within 360 degrees
+    get_rotation(&curRot);
+    unsigned short targetAngle = (((DEG_TO_SHORT(uDeg)+curRot)) % 5760);
+    if (!sign) {
+    TURN_RIGHT;
+    }
+    else{
+        TURN_LEFT;}
+    unsigned short angle_turned=curRot;
+    unsigned short first_angle=curRot;
+    int threshold = 10;
+    botprintf("is curRot larger than %d, and smaller than %d\n\r",targetAngle-threshold,targetAngle+threshold );
 
-        }
-    int ourprogress=0;
-
-    if (negative) {
-        TURN_RIGHT;}
-        else {
-            TURN_LEFT;
-        }
     botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
 
-    while ((targetAngle > (curRot+4) )||(targetAngle < (curRot-4) )) {
-        //oi_update(sensor);
+   //while (!((targetAngle-threshold)<curRot) &&  ((targetAngle+threshold)>curRot)){
+    while (abs(curRot-targetAngle)>threshold){
+    get_rotation(&curRot);
+   // oi_quick_update(sensor);
+//        botprintf("is curRot larger than %d, and smaller than %d\n\r",targetAngle-threshold,targetAngle+threshold );
 
         botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
-        if ((targetAngle > (curRot+4) )) {
-            TURN_RIGHT;
-
-        }
-        else if((targetAngle < (curRot-4) )) {
-            TURN_LEFT;
-
-        }
-    get_rotation(&curRot);
 
     }
-        oi_setWheels(0, 0);
+    oi_setWheels(0, 0);
+    //oi_setWheels(10,-10);
+    timer_waitMillis(100);
+    oi_update(sensor);
+
+    get_rotation(&curRot);
+
+    if (abs(curRot-targetAngle)>5) {
+        if (!sign) {
+        oi_setWheels(20,-20);
+        }
+        else {
+            oi_setWheels(-20,20);
+
+        }
+    }
+    unsigned short newangle;
+    if (!sign) {
+     newangle= (targetAngle + 10)%5760;
+    }
+    else {
+        newangle= (targetAngle - 10)%5760;
+
+    }
+    while (abs(curRot-(newangle))>2){
+    get_rotation(&curRot);
+
+        botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
+
+    }
+    oi_setWheels(0, 0);
+    timer_waitMillis(100);
+    get_rotation(&curRot);
+
+         botprintf("curr: %u, target: %u, new target: %u \n\r",curRot,targetAngle,newangle);
+
+
+    oi_update(sensor);
+
 
 }
-
 
 void move_around_obstacle(oi_t *sensor, char leftBumper, char rightBumper);
 

@@ -24,18 +24,20 @@ void manual_mode(oi_t * sensor) {
 
         break;
     case 'a':
-        rotate_90_degrees(sensor);
+        rotateDegrees(sensor, 90);
+
+        //rotate_90_degrees(sensor);
         break;
     case 'd':
-        turn_robot_degrees(sensor, 90);
+        rotateDegrees(sensor, -90);
 
         break;
     case 'j':
-        turn_robot_degrees(sensor, 10);
+        rotateDegrees(sensor, 10);
 
         break;
     case 'k':
-        turn_robot_degrees(sensor, -10);
+        rotateDegrees(sensor, -10);
 
         break;
     case 'h':
