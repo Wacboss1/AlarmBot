@@ -447,36 +447,6 @@ int move_around_cliff (oi_t * sensor, move_data * bot_move_data, int which_cliff
 
 
 }
-
-/////this one is used by user
-///it calls move_distance after instantiating a bot_data with the target y value
-////
-void move_specific_distance(oi_t *sensor, int cm) {
-    move_data bot_move_data = {0,0,0,cm};
-    int SPEED = 200;
-    double distance_traveled = 0;
-    signed char direction = 1;
-    if (cm < 0)
-    {
-        direction = -1;
-        cm *= direction;
-    }
-    timer_init();
-    oi_setWheels(SPEED * direction, SPEED * direction*WHEEL_OFFSET); //rwheel, lwheel
-    while (distance_traveled < cm * 10)
-    {
-        print_vel();
-
-                if(StopOnLine(sensor))
-                {
-                    break;
-                }
-        oi_update(sensor);
-        distance_traveled += (sensor->distance * direction);
-        bot_move_data.y=distance_traveled;
-    }
-    oi_setWheels(0, 0);
-}
 int determineDirection(unsigned short cur, unsigned short last) {
     int direction = 0;
     if ((last>5000) && ( cur < 100)) {
@@ -494,10 +464,81 @@ int determineDirection(unsigned short cur, unsigned short last) {
     return direction;
 }
 
+/////this one is used by user
+///it calls move_distance after instantiating a bot_data with the target y value
+/*
+ * i don't
+ */
+////
+void move_specific_distance(oi_t *sensor, int cm) {
+    unsigned short curRot;
+    get_rotation(&curRot);
+    unsigned short startRot = curRot;
+    unsigned short angleDiff=0;
+    unsigned short lastRot=curRot;
+    unsigned short degreeDifTol=8;
+    int adjustMode=0;
+       int ticksTurned =0;
+
+    move_data bot_move_data = {0,0,0,cm};
+    int SPEED = 200;
+    double distance_traveled = 0;
+    signed char direction = 1;
+    if (cm < 0)
+    {
+        direction = -1;
+        cm *= direction;
+    }
+    timer_init();
+    oi_setWheels(SPEED * direction, SPEED * direction*WHEEL_OFFSET); //rwheel, lwheel
+    while (distance_traveled < cm * 10)
+    {
+        get_rotation(&curRot);
+               angleDiff = ((abs(curRot-startRot)%IMU_360_DEG));
+
+               int curDir = determineDirection(curRot, lastRot)*direction;
+               if (angleDiff>5) {
+               if ((curDir==1) && (adjustMode!=1) && !((ticksTurned<2) && (curDir==-1)) ){
+
+                   adjustMode=1;
+                   botprintf("wer'e veering to the right\n\r");
+                   oi_setWheels(SPEED * direction, SPEED * direction * WHEEL_OFFSET); //rwheel, lwheel
+                   ticksTurned=0;
+
+               }
+               else if ((curDir==-1)&& (adjustMode!=-1)&& !((ticksTurned<2) && (curDir==1))){
+                   adjustMode=-1;
+
+                   botprintf("were veering to the left");
+                   oi_setWheels(SPEED * direction* WHEEL_OFFSET, SPEED * direction); //rwheel, lwheel
+                   ticksTurned=0;
+
+               }
+               }
+               if (adjustMode) {
+                   ticksTurned++;
+               }
+
+
+               botprintf("current rotation: %u, start_rotation: %u, angular displacement: %u, ticks turned: %u, direction: %d, adjustMode: %d\n\r",curRot,startRot,angleDiff,ticksTurned,curDir,adjustMode);
+
+                if(StopOnLine(sensor))
+                {
+                    break;
+                }
+        oi_update(sensor);
+        distance_traveled += (sensor->distance * direction);
+        bot_move_data.y=distance_traveled;
+    }
+    oi_setWheels(0, 0);
+}
+
+
 /*
  * returns cm not traveled as the first byte, and the second byte has all the flags of what sensors were set off
  * these changes should not effect any code
  * if we moved more than 255 centimeters, this could be problematic
+ * i do not using this for moving backwards
  */
 
 unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
@@ -508,11 +549,13 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
     unsigned short angleDiff=0;
     unsigned short lastRot=curRot;
     unsigned short degreeDifTol=8;
+    int adjustMode=0;
+       int ticksTurned =0;
+
     FieldEdgeFound = 0;
     move_data bot_move_data = {0,0,0,cm};
     int SPEED = 200;
-    int adjustMode=0;
-    int ticksTurned =0;
+
     double distance_traveled = 0;
 
     signed char direction = 1;
