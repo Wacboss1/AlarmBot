@@ -28,6 +28,9 @@
 #define BOTHFRONT 0x5
 #define BOTHLEFT 0x3
 
+///used for moving straight correctly
+#define WHEEL_OFFSET .9
+#define IMU_360_DEG 5760
 
 ///imu conversions
 #define DEG_TO_SHORT(a) a*16
@@ -63,7 +66,7 @@ typedef struct movement_data{
     unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm);
     int update_move_data(int dist);
     int update_rotation_data(int deg);
-
+    int print_vel();
         ///rotate with the IMU
     void rotate_degrees(int deg);
     void rotate_90_degrees();

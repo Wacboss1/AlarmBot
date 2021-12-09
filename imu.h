@@ -24,6 +24,7 @@
 #define ACC_X_L 0x08
 #define HEADING_L 0x1A
 #define SYS_ERR 0x3A
+#define LINEAR_VEL 0x28
 /*
  * Read : 0 No error
 1 Peripheral initialization error
@@ -62,5 +63,7 @@ int init_high_speed();
 int get_orientation(signed short buffer[]);
 int get_rotation(signed short * data);
 int get_imu_error();
+int getAcc(signed short buffer[]);
+int getVel(signed short buffer[]);
 
 #endif /* IMU_H_ */

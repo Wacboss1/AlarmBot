@@ -18,10 +18,10 @@ void manual_mode(oi_t * sensor) {
     ch= getChar();
     switch (ch) {
     case 'w':
-
+        actually_move_until_detect_obstacle(sensor, 50);
         break;
     case 's':
-
+        move_specific_distance(sensor, -50);
         break;
     case 'a':
         rotateDegrees(sensor, 90);
@@ -42,9 +42,13 @@ void manual_mode(oi_t * sensor) {
         break;
     case 'h':
         ;
-        signed short data;
-             get_rotation(&data);
-             botprintf("%d\n\r",(int)(data/16));
+        while (1){
+            timer_waitMillis(10);
+            print_vel();
+        }
+        //signed short data;
+             //get_rotation(&data);
+             //botprintf("%d\n\r",(int)(data/16));
 
         break;
 

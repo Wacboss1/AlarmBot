@@ -398,6 +398,40 @@ int get_orientation(signed short buffer[]) {
        return error;
 }
 
+int getAcc(signed short buffer[]) {
+    char charbuff[6];
+        int error = get_bytes(ACC_X_L, charbuff, 6);
+        if (error) {
+                  botprintf("error in get accel: %d",error);
+                  botprintf("%u,%u,%u\n\r",charbuff[0],charbuff[2],charbuff[4]);
+
+                  return error;
+              }
+             // botprintf("%u,%u,%u\n\r",gyrodata[0],gyrodata[2],gyrodata[4]);
+
+               buffer[0]=charbuff[0]+ (((signed short) charbuff[1])<<8);
+               buffer[1]=charbuff[2]+ (((signed short) charbuff[3])<<8);
+               buffer[2]=charbuff[4]+ (((signed short) charbuff[5])<<8);
+
+}
+int getVel(signed short buffer[]) {
+    char charbuff[6];
+        int error = get_bytes(LINEAR_VEL, charbuff, 6);
+        if (error) {
+                  botprintf("error in get vel: %d",error);
+                  botprintf("%u,%u,%u\n\r",charbuff[0],charbuff[2],charbuff[4]);
+
+                  return error;
+              }
+             // botprintf("%u,%u,%u\n\r",gyrodata[0],gyrodata[2],gyrodata[4]);
+
+               buffer[0]=charbuff[0]+ (((signed short) charbuff[1])<<8);
+               buffer[1]=charbuff[2]+ (((signed short) charbuff[3])<<8);
+               buffer[2]=charbuff[4]+ (((signed short) charbuff[5])<<8);
+
+}
+
+
 
 int parse_packets(char packets[]) {
 

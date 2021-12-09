@@ -33,6 +33,18 @@ unsigned short angleTurned(unsigned int * totalTraveled) {
     static unsigned short lastval;
 
 }
+
+int accelToVel(signed short acc[3]) {
+    signed short vel[3];
+
+
+}
+int print_vel(){
+    signed short vel[3];
+                    getVel(vel);
+                    botprintf("%d,%d,%d\n\r",vel[0],vel[1],vel[2]);
+
+}
 void rotate_90_degrees( oi_t * sensor) {
     unsigned short curRot;
     get_rotation(&curRot);
@@ -91,6 +103,7 @@ void rotate_90_degrees( oi_t * sensor) {
  */
 #define IMU_360 5760
 void rotateDegrees( oi_t * sensor, signed short signedDeg) {
+    signedDeg*=-1; ///I made the function backwards
     unsigned short uDeg = abs(signedDeg);
     char sign=0;
     if (signedDeg<0) {
@@ -449,14 +462,36 @@ void move_specific_distance(oi_t *sensor, int cm) {
         cm *= direction;
     }
     timer_init();
-    oi_setWheels(SPEED * direction, SPEED * direction); //rwheel, lwheel
+    oi_setWheels(SPEED * direction, SPEED * direction*WHEEL_OFFSET); //rwheel, lwheel
     while (distance_traveled < cm * 10)
     {
+        print_vel();
+
+                if(StopOnLine(sensor))
+                {
+                    break;
+                }
         oi_update(sensor);
         distance_traveled += (sensor->distance * direction);
         bot_move_data.y=distance_traveled;
     }
     oi_setWheels(0, 0);
+}
+int determineDirection(unsigned short cur, unsigned short last) {
+    int direction = 0;
+    if ((last>5000) && ( cur < 100)) {
+        return 1;
+    }
+    else if ((last<100 )&& (cur>5000)) {
+        return -1;
+    }
+    if (last>cur) {
+        direction =-1;
+    }
+    else if (last<cur) {
+        direction = 1;
+    }
+    return direction;
 }
 
 /*
@@ -464,12 +499,22 @@ void move_specific_distance(oi_t *sensor, int cm) {
  * these changes should not effect any code
  * if we moved more than 255 centimeters, this could be problematic
  */
+
 unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
 {
+    unsigned short curRot;
+    get_rotation(&curRot);
+    unsigned short startRot = curRot;
+    unsigned short angleDiff=0;
+    unsigned short lastRot=curRot;
+    unsigned short degreeDifTol=8;
     FieldEdgeFound = 0;
     move_data bot_move_data = {0,0,0,cm};
     int SPEED = 200;
+    int adjustMode=0;
+    int ticksTurned =0;
     double distance_traveled = 0;
+
     signed char direction = 1;
     if (cm < 0)
     {
@@ -484,6 +529,36 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
 
     while (distance_traveled < cm * 10) ///we should not have to multiply the number of centimeters by 10
     {
+        //print_vel();
+
+        get_rotation(&curRot);
+        angleDiff = ((abs(curRot-startRot)%IMU_360_DEG));
+
+        int curDir = determineDirection(curRot, lastRot);
+        if (angleDiff>5) {
+        if ((curDir==1) && (adjustMode!=1) && !((ticksTurned<2) && (curDir==-1)) ){
+
+            adjustMode=1;
+            botprintf("wer'e veering to the right\n\r");
+            oi_setWheels(SPEED * direction, SPEED * direction * WHEEL_OFFSET); //rwheel, lwheel
+            ticksTurned=0;
+
+        }
+        else if ((curDir==-1)&& (adjustMode!=-1)&& !((ticksTurned<2) && (curDir==1))){
+            adjustMode=-1;
+
+            botprintf("were veering to the left");
+            oi_setWheels(SPEED * direction* WHEEL_OFFSET, SPEED * direction); //rwheel, lwheel
+            ticksTurned=0;
+
+        }
+        }
+        if (adjustMode) {
+            ticksTurned++;
+        }
+
+
+        botprintf("current rotation: %u, start_rotation: %u, angular displacement: %u, ticks turned: %u, direction: %d, adjustMode: %d\n\r",curRot,startRot,angleDiff,ticksTurned,curDir,adjustMode);
         if(StopOnLine(sensor))
         {
             break;
@@ -538,7 +613,7 @@ void move_around_obstacles(oi_t *sensor, int centimeters)
         direction = -1;
         centimeters *= direction;
     }
-      centimeters+MAGIC_DiSTANCE_IONCREASE;
+      centimeters;//+MAGIC_DiSTANCE_IONCREASE;
     //lcd_init();
     timer_init();
     oi_setWheels(SPEED * direction, SPEED * direction); //rwheel, lwheel
