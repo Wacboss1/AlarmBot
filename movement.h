@@ -63,12 +63,12 @@ typedef struct movement_data{
      * Actually just moves given direction until a bumper detects something. Returns flag with values defined in the HIT_BUMPER defines
      *
      */
-    unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm);
+    unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmTraveled);
     int update_move_data(int dist);
     int update_rotation_data(int deg);
     int print_vel();
         ///rotate with the IMU
-    void rotate_degrees(int deg);
+    void rotateDegrees( oi_t * sensor, signed short signedDeg);
     void rotate_90_degrees();
 #endif /* MOVEMENT_H_ */
 

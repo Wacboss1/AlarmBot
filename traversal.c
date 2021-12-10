@@ -71,13 +71,38 @@ enum Cliff_status
 
 ///returns 1 if object is in the way
 int obj_in_way(scanned_obj * obj) {
-    int boundaryLeft;
-    int boundaryRight;
-    if ((obj->angle > 60 && obj->angle < 120)  || (obj->angle2 > 60 && obj->angle2 < 120) ){
-        return 1;
-    }
-    else return 0;
+   int botRad=18; //its actually 18ish
+    float objXRight = abs(cos(DEG_TO_RAD(obj->angle))*obj->rightDist);
+    float objXLeft = abs(cos(DEG_TO_RAD((obj->angle2)))*obj->leftDist);
+    int returnval=0;
+    botprintf("objxright: %f, objxleft: %f, rightdist: %f, left dist: %f\n\r",objXRight,objXLeft,obj->rightDist,obj->leftDist);
+    if ((objXRight<botRad )|| (objXLeft<botRad)) {
+        returnval=1;}
 
+   /*
+    if ((objXRight>botRad) && (objXLeft <botRad)){           //((obj->angle > 60 && obj->angle < 120)  || (obj->angle2 > 60 && obj->angle2 < 120) ){
+        returnval+=1;
+    }
+    if ((objXRight<botRad) && (objXLeft >botRad) ){
+        returnval+=2;
+
+    }
+    if ((objXRight>botRad) && (objXLeft >botRad) ) {
+        return 4;
+    }
+    */
+     return returnval;
+
+}
+char inwaymsg[2][20] = {"not in the way","in the way"}; ///"it would hit the rightbumper","it would hitleft","its completely in theway","its a huge wall"};
+///check all the objects if they are in the way
+int print_objs_in_way() {
+    int i =0;
+    for (i=0;i<num_objs_list[0];i++) {
+        int inway=obj_in_way(&(front_objects[i]));
+        botprintf("object %d, %s\n\r",i,inwaymsg[inway]);
+
+    }
 }
 
 
@@ -195,7 +220,8 @@ int move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY) {
     case LEFT_OA:
             *gridX-=CELLSIZE_OA;
     }
-    actually_move_until_detect_obstacle(sensor, CELLSIZE_OA);
+    int distTraveled;
+    actually_move_until_detect_obstacle(sensor, CELLSIZE_OA,&distTraveled);
     return 0;
 }
 
@@ -233,7 +259,8 @@ int go_around_big_obstacles(oi_t *sensor) {
         else if (gridY==CELLSIZE_OA) {
             int incvalue=20;
             gridY+=incvalue;
-            actually_move_until_detect_obstacle(sensor, incvalue);
+            int distTraveled;
+            actually_move_until_detect_obstacle(sensor, incvalue, &distTraveled);
 
         }
         ///if we get here that means we just need to turn back to the
@@ -269,7 +296,8 @@ int move_around_obj(int objInd, oi_t * sensor) {
     //rotate_degrees(sensor,RAD_TO_DEG(radiansToTurn));
     double distanceToGo=(double)(HYP(obj->straight_width/2,obj->distance));
 
-    unsigned int moveStopped= actually_move_until_detect_obstacle(sensor, distanceToGo);
+    int distTraveled;
+    unsigned int moveStopped= actually_move_until_detect_obstacle(sensor, distanceToGo, &distTraveled);
     ///if we detect anything, we backtrack and try the left side
     if (FieldEdgeFound || moveStopped) {
         move_specific_distance(sensor, -(moveStopped>>8));
@@ -288,7 +316,8 @@ int find_endpoint(oi_t * sensor)
     scanned_obj inTheWay[3];
     int scn=scan(inTheWay);
     if (scn==CLEAR_SPACE) {
-        actually_move_until_detect_obstacle(sensor, 56);
+        int distTraveled;
+        actually_move_until_detect_obstacle(sensor, 56, &distTraveled);
     }
     else if (-2) {
         ///found the endpoint

@@ -115,7 +115,7 @@ int turn_servo_deg(char degrees)
     {
         unsigned int clock_cycles = deg_to_clk(degrees);
         move_servo(clock_cycles);
-        timer_waitMillis(abs(last_deg-degrees)*4);
+        timer_waitMillis(abs(last_deg-degrees)*10);
         last_deg = degrees;
 
         return 0;

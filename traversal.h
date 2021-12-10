@@ -9,7 +9,8 @@
 #define TRAVERSAL_H_
 int test_object_shit(oi_t * sensor);
 int enter_endpoint(int deg, float dist);
-int obj_in_way(scanned_obj * obj);
+
+//int obj_in_way(scanned_obj * obj);
 int scan();
 int turnRight90(oi_t *sensor, int * cur);
 #define FORWARD_OA 0
@@ -23,4 +24,5 @@ move_forward_OA(oi_t *sensor, int * cur, int * gridX, int * gridY);
 go_around_big_obstacles(oi_t *sensor);
 find_endpoint(oi_t * sensor);
 move_around_obj(int objInd, oi_t * sensor);
+int print_objs_in_way();
 #endif /* TRAVERSAL_H_ */

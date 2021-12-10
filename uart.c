@@ -8,7 +8,7 @@
 #include "uart.h"
 #include "stdarg.h"
 #include "stdio.h"
-
+#include "botconfig.h"
 #include "timer.h"
 volatile char data_received;
 volatile char data_received_flag = 0;
@@ -74,8 +74,20 @@ void uart_sendChar(char data)
    
 }
 
+void uart_getString(char * buffer[], int maxC) {
+    int i = 0;
+
+    do {
+        buffer[i]=getChar();
+        i++;
+    }  while ( buffer[i-1]!='\0' && (i<(maxC-1)));
+}
+
 void botprintf(char *format, ...)
 {
+    if (GUI) {
+        return;
+    }
 
    /* va_list args;
     va_start(args,format);

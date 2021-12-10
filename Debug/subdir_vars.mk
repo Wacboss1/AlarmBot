@@ -12,6 +12,7 @@ C_SRCS += \
 ../Timer.c \
 ../adc.c \
 ../button.c \
+../gui.c \
 ../imu.c \
 ../lcd.c \
 ../main.c \
@@ -29,6 +30,7 @@ C_DEPS += \
 ./Timer.d \
 ./adc.d \
 ./button.d \
+./gui.d \
 ./imu.d \
 ./lcd.d \
 ./main.d \
@@ -46,6 +48,7 @@ OBJS += \
 ./Timer.obj \
 ./adc.obj \
 ./button.obj \
+./gui.obj \
 ./imu.obj \
 ./lcd.obj \
 ./main.obj \
@@ -63,6 +66,7 @@ OBJS__QUOTED += \
 "Timer.obj" \
 "adc.obj" \
 "button.obj" \
+"gui.obj" \
 "imu.obj" \
 "lcd.obj" \
 "main.obj" \
@@ -80,6 +84,7 @@ C_DEPS__QUOTED += \
 "Timer.d" \
 "adc.d" \
 "button.d" \
+"gui.d" \
 "imu.d" \
 "lcd.d" \
 "main.d" \
@@ -97,6 +102,7 @@ C_SRCS__QUOTED += \
 "../Timer.c" \
 "../adc.c" \
 "../button.c" \
+"../gui.c" \
 "../imu.c" \
 "../lcd.c" \
 "../main.c" \

@@ -10,10 +10,15 @@
 
 #include "sonar.h"
 
+#define MAX_DISTANCE 60
+
+
 typedef struct
 {
     int angle;
     float distance;
+    float leftDist;
+    float rightDist;
     int angle2;
     int radial_width;
     float straight_width;

@@ -15,9 +15,8 @@
 #include "uart.h"
 //#include "distancesensor.h"
 #define   _SCAN(a,b) simpleScan(a, b)
-
  int num_objs_list[4];
-scanned_obj front_objects[40];
+scanned_obj front_objects[20];
 
 scan_handle all_scans[180];
 
@@ -39,7 +38,7 @@ char scan180_alarmbot() {
 char scan180_alarmbot()
 {
 
-    unsigned char nscans = 40;
+    unsigned char nscans = 180;
     int deg_multiplier = 180 / nscans;
     int i = 0;
     int direction =0;
@@ -135,7 +134,7 @@ float get_width(float dist1, int angle)
 char objsFrmScns(scanned_obj *objarray)
 {
     //these and those in the above function should be in a struct or something
-    unsigned char nscans = 40;
+    unsigned char nscans = 180;
     int deg_multiplier = 180 / nscans;
     int i = 0;
     int direction = 0;
@@ -146,13 +145,17 @@ char objsFrmScns(scanned_obj *objarray)
     {
         int first_angle;
         int second_angle;
+        float first_dist;
+        float second_dist;
 
         scan_handle current_scan = all_scans[i];
 
-        if ((current_scan.IR) < 50)
+        if ((current_scan.IR) < MAX_DISTANCE)
         {
             first_angle = i;
-            while ((current_scan.IR) < 50)
+            first_dist=current_scan.IR;
+
+            while ((current_scan.IR) < MAX_DISTANCE)
             {
                 i += deg_multiplier;
                 current_scan = all_scans[i];
@@ -160,6 +163,7 @@ char objsFrmScns(scanned_obj *objarray)
                     break;
             }
             second_angle = i - deg_multiplier;
+            second_dist=all_scans[i-deg_multiplier].IR;
 
             // ---===Update Object Values===---
             objarray[num_objs_list[direction]].angle = first_angle;
@@ -169,12 +173,20 @@ char objsFrmScns(scanned_obj *objarray)
 
                 //using ping for distance at middle of object
             Ping  ping;
-            objarray[num_objs_list[0]].distance = (float) SonarScan((objarray[num_objs_list[direction]].radial_width)+first_angle, &ping);
+            if (nscans==180) {
+                objarray[num_objs_list[0]].distance =all_scans[(objarray[num_objs_list[direction]].radial_width)+first_angle].ping;
+            }
+            else {
+            objarray[num_objs_list[0]].distance = (float) SonarScan((objarray[num_objs_list[direction]].radial_width/2)+first_angle, &ping);
+            }
             objarray[num_objs_list[direction]].straight_width = get_width(
                     objarray[num_objs_list[direction]].distance,
                     second_angle - first_angle);
 
             objarray[num_objs_list[direction]].scan_direction = direction;
+            objarray[num_objs_list[direction]].leftDist=second_dist;
+            objarray[num_objs_list[direction]].rightDist=first_dist;
+
 
             if ((second_angle - first_angle) > 0 )
                 num_objs_list[direction]++;

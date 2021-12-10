@@ -41,7 +41,6 @@ int main(void){
     uart_interrupt_init();
 
 
-
     botprintf("battery: %d out of %d\n\r",interface->batteryCharge,interface->batteryCapacity );
     lcd_printf("battery: %d out of %d\n",interface->batteryCharge,interface->batteryCapacity);
     //configure_wheels(interface);

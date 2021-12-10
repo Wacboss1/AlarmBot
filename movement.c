@@ -322,9 +322,11 @@ void FindStartPostition(oi_t* sensor)
 {
     //Poke around to find an nearby edge of the playing field
     int i;
+    int distTraveled;
+
     for(i = 0; i < 4; i++){
-        actually_move_until_detect_obstacle(sensor, 20);
-        actually_move_until_detect_obstacle(sensor, -20);
+        actually_move_until_detect_obstacle(sensor, 20,&distTraveled);
+        actually_move_until_detect_obstacle(sensor, -20,&distTraveled);
         if(FieldEdgeFound)
         {
             break;
@@ -339,7 +341,7 @@ void FindStartPostition(oi_t* sensor)
     //move along the edge until a corner is found
     while(!FieldEdgeFound)
     {
-        actually_move_until_detect_obstacle(sensor, 30);
+        actually_move_until_detect_obstacle(sensor, 30,&distTraveled);
     }
     //orient self to being searching for goal
     move_specific_distance(sensor, -10);
@@ -541,8 +543,9 @@ void move_specific_distance(oi_t *sensor, int cm) {
  * i do not using this for moving backwards
  */
 
-unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
+unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmTraveled)
 {
+    int distance_offset = 3; ///cm
     unsigned short curRot;
     get_rotation(&curRot);
     unsigned short startRot = curRot;
@@ -570,7 +573,7 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
     //while loop to travel the set distance
     unsigned char returnflag = 0;
 
-    while (distance_traveled < cm * 10) ///we should not have to multiply the number of centimeters by 10
+    while (distance_traveled < ((cm-(distance_offset)) * 10)) ///we should not have to multiply the number of centimeters by 10
     {
         //print_vel();
 
@@ -602,11 +605,12 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
 
 
         botprintf("current rotation: %u, start_rotation: %u, angular displacement: %u, ticks turned: %u, direction: %d, adjustMode: %d\n\r",curRot,startRot,angleDiff,ticksTurned,curDir,adjustMode);
+        oi_update(sensor);
+
         if(StopOnLine(sensor))
         {
             break;
         }
-        oi_update(sensor);
         distance_traveled += (sensor->distance * direction);
         bot_move_data.y=distance_traveled;
         int which_cliff=detect_cliff(sensor);
@@ -617,13 +621,14 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
 
         }
         if (sensor->bumpLeft)
-            returnflag = returnflag | HIT_LEFT_BUMPER;
-        if (sensor->bumpRight)
-            returnflag = returnflag | HIT_RIGHT_BUMPER;
+        {
+            returnflag = (returnflag | HIT_LEFT_BUMPER);}
+        if (sensor->bumpRight){
+            returnflag = (returnflag | HIT_RIGHT_BUMPER);}
         if (returnflag > 0)
         {
             oi_setWheels(0, 0);
-            return returnflag;
+            break;
         }
         if (data_received_flag && data_received == 't')
         {
@@ -632,11 +637,17 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm)
     }
     oi_setWheels(0, 0);
     //this should give us what we need, sometimes, assuming we aren't multiplying our cm by 10
-    if (returnflag) {
-    returnflag += ((unsigned int) distance_traveled)<<8;
+    if (returnflag || FieldEdgeFound) {
+        if (distance_traveled<0) {
+            distance_traveled*=-1;
+        }
+        *cmTraveled =(distance_traveled*10);
+
+
     }
     return returnflag;
 }
+
 
 const int backwards_amount = 0;
 const int horizontal_amount = 10;
@@ -705,8 +716,8 @@ void move_around_obstacles(oi_t *sensor, int centimeters)
         turn_robot_degrees(sensor,turn);
         hor_pos *= -1;
     }
-
-    actually_move_until_detect_obstacle(sensor, horizontal_amount);
+    int distTraveled;
+    actually_move_until_detect_obstacle(sensor, horizontal_amount, &distTraveled);
     if (turn != 0)turn_robot_degrees(sensor, -turn);
     //stop, update display
     oi_setWheels(0, 0);
