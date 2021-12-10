@@ -22,16 +22,14 @@
 #define VERY_VERBOSE 0
 #endif
 ///show putty
-#define PUTTY 1
+#define PUTTY 0
 //use data from array instead of scans
 #define USE_DEBUG_DATA 0
 
-
+extern int GUI;
 
 #if PUTTY==0
-#define GUI 1
 #else
-#define GUI 0
 #endif
 
 //#define _SIMULATOR 0
@@ -61,6 +59,8 @@
 #if MYBOT==14
 #define IR_EXP -1.872
 #define IR_COEFF 20000000
+#define SERVO_LEFT 0x50AC
+#define SERVO_RIGHT 0xBCAC
 #endif
 
 #if MYBOT==5

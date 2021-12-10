@@ -39,9 +39,36 @@ int accelToVel(signed short acc[3]) {
 
 
 }
+#define ACC_MAX_BUFF 5
+int updateAcc(signed short accbuff[ACC_MAX_BUFF][3], signed short avgAcc[3]) {
+    int i =0;
+    int j;
+
+    for (i=0;i<(ACC_MAX_BUFF-1);i++) {
+        for (j=0;j<3;j++){
+        accbuff[i][j]=accbuff[i+1][j];
+        avgAcc[j]+=accbuff[i][j];
+        }
+    }
+    getAcc(accbuff[ACC_MAX_BUFF-1]);
+    for (j=0;j<3;j++){
+            avgAcc[j]=avgAcc[j]/ACC_MAX_BUFF;
+            }
+    return 0;
+
+
+}
+int updateVel(signed short vel[3],signed short avgAcc[3], int nMilli) {
+    int i =0;
+    for (i=0;i<(3);i++) {
+
+
+    }
+    return 0;
+}
 int print_vel(){
     signed short vel[3];
-                    getVel(vel);
+                    //getVel(vel);
                     botprintf("%d,%d,%d\n\r",vel[0],vel[1],vel[2]);
 
 }
@@ -479,6 +506,7 @@ void move_specific_distance(oi_t *sensor, int cm) {
     unsigned short angleDiff=0;
     unsigned short lastRot=curRot;
     unsigned short degreeDifTol=8;
+    int distance_offset = 3;
     int adjustMode=0;
        int ticksTurned =0;
 
@@ -493,7 +521,7 @@ void move_specific_distance(oi_t *sensor, int cm) {
     }
     timer_init();
     oi_setWheels(SPEED * direction, SPEED * direction*WHEEL_OFFSET); //rwheel, lwheel
-    while (distance_traveled < cm * 10)
+    while ((distance_traveled-distance_offset) < cm * 10)
     {
         get_rotation(&curRot);
                angleDiff = ((abs(curRot-startRot)%IMU_360_DEG));
@@ -536,6 +564,33 @@ void move_specific_distance(oi_t *sensor, int cm) {
 }
 
 
+int checkFlags(oi_t *sensor) {
+    move_data bot_move_data = {0,0,0,0};
+
+    oi_update(sensor);
+
+    unsigned int returnflag=0;
+    StopOnLine(sensor);
+
+    int which_cliff=detect_cliff(sensor);
+    if (which_cliff>0)
+    {
+        on_detect_cliff(sensor,&bot_move_data, which_cliff);
+        returnflag |= which_cliff;
+
+    }
+    if (sensor->bumpLeft)
+    {
+        returnflag = (returnflag | HIT_LEFT_BUMPER);}
+    if (sensor->bumpRight){
+        returnflag = (returnflag | HIT_RIGHT_BUMPER);}
+
+
+
+
+return returnflag;
+}
+
 /*
  * returns cm not traveled as the first byte, and the second byte has all the flags of what sensors were set off
  * these changes should not effect any code
@@ -545,6 +600,12 @@ void move_specific_distance(oi_t *sensor, int cm) {
 
 unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmTraveled)
 {
+    FieldEdgeFound = 0;
+
+    unsigned int firstcheck = checkFlags(sensor);
+    if (firstcheck || FieldEdgeFound){
+        return firstcheck;
+    }
     int distance_offset = 3; ///cm
     unsigned short curRot;
     get_rotation(&curRot);
@@ -555,7 +616,6 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmT
     int adjustMode=0;
        int ticksTurned =0;
 
-    FieldEdgeFound = 0;
     move_data bot_move_data = {0,0,0,cm};
     int SPEED = 200;
 

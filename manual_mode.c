@@ -16,6 +16,7 @@
 extern scanned_obj front_objects[40];
 extern int num_objs_list[4];
 extern int FieldEdgeFound;
+extern int GUI;
 
 int gui_rotate(oi_t * sensor,int dir)
 {
@@ -182,6 +183,24 @@ void manual_mode(oi_t *sensor)
 
             }
             break;
+        case 'B':
+                    if (GUI)
+                    {
+
+                        sendMsg(&COMPLETED_MSG);
+                        int dist = -((int)getChar());
+                        sendMsg(&START_MSG);
+                        int distTraveled;
+                        move_specific_distance(sensor, dist);
+                        if (flags || FieldEdgeFound)
+                        {
+                            sendBumpMsg(flags,distTraveled);
+                        }
+
+                        sendMsg(&COMPLETED_MSG);
+
+                    }
+                    break;
         case 'h':
             ;
             while (1)
@@ -230,6 +249,13 @@ void manual_mode(oi_t *sensor)
 
             }
             break;
+        case ';':
+                          GUI ^= 1;
+                          if (GUI) {
+                              sendMsg(&COMPLETED_MSG);
+
+                          }
+                         break;
         }
     }
 }

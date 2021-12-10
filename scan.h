@@ -10,7 +10,7 @@
 
 #include "sonar.h"
 
-#define MAX_DISTANCE 60
+#define MAX_DISTANCE 50
 
 
 typedef struct

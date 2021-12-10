@@ -18,9 +18,55 @@
 #include "botconfig.h"
 #include "scan.h"
 #include "imu.h"
+#include"scan.h"
 
-///used with simplescam.
-///mimics the old scan structure from cybotscan
+void muh_calibrate()
+{
+    int i = 0;
+    double nTriesPerDist = 10;
+
+
+    //SCAN at 8 different positions, five times
+    ///I used these
+    //48
+    //40
+    //32
+    //28
+    //24
+    //22
+    //18
+    //12
+
+    int pos_i = 8;
+   // CyBOT_sendStr("Press any button to start scan\n\r");
+    botprintf("IR\n\r");
+     turn_servo_deg(90);
+
+    while (pos_i)
+    {
+
+       char ch = getChar();
+
+        pos_i--;
+        double total = 0;
+        double ping_total = 0;
+        for (i = 0; i < (int) nTriesPerDist; i++)
+        {
+            //SCAN_(105, &temp);
+           // adc_read(void)
+            total += (double)adc_read();
+
+        }
+        total = total/10.0;
+
+        botprintf("%Lf\n\r", total);
+
+
+
+    }
+    botprintf("Done scanning.\n\r");
+
+}
 
 int main(void){
     timer_init();
@@ -94,6 +140,7 @@ int main(void){
                 case '4':
                  //   test_scans_print_scans();
                    // test_object_shit(interface);
+                    muh_calibrate();
                     break;
 
                 case '5':
@@ -116,7 +163,7 @@ int main(void){
                     manual_mode(interface);
                     break;
                 default:
-                   break;
+
 
 
                 }

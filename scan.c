@@ -63,8 +63,8 @@ char scan180_alarmbot()
 
                 if (VERY_VERBOSE)
                 {
-                    botprintf("Angle %d, Raw value: %d, DistVal: %d\n\r", i,
-                              temp.IR, temp.IR);
+                    botprintf("Angle %d, ping: %d, IR: %d\n\r", i,
+                              temp.ping, temp.IR);
                 }
             }
 
@@ -102,22 +102,23 @@ int test_scans_print_scans() {
 }
 
 int simpleScan(char deg, scan_handle * scn) {
-    unsigned int startTime = timer_getMillis();
+   // unsigned int startTime = timer_getMillis();
     turn_servo_deg(deg);
-    botprintf("Time it took to move servo %u\n\r", (timer_getMillis()-startTime));
+    //botprintf("Time it took to move servo %u\n\r", (timer_getMillis()-startTime));
     ///waiting for a long time
     ///i reccomend guessing the amount of time it will take the servo to move (current_deg - new_deg) * (10 milli per degree)
     //timer_waitMillis(500);
  //   timer_waitMillis()
     scn->angle=deg;
     Ping png;
-    startTime = timer_getMillis();
+  //  startTime = timer_getMillis();
     scn->ping = GetSonarDistance(&png);
-    botprintf("Time it took to do sonar:  %u\n\r", (timer_getMillis()-startTime));
-    startTime = timer_getMillis();
+//    botprintf("sonar risingtime - falling time")
+   // botprintf("Time it took to do sonar:  %u\n\r", (timer_getMillis()-startTime));
+//    startTime = timer_getMillis();
 
     scn->IR = IRDistanceScan(deg);
-    botprintf("Time it took to do distance scan: %u\n\r", (timer_getMillis()-startTime));
+   // botprintf("Time it took to do distance scan: %u\n\r", (timer_getMillis()-startTime));
 
     return 0;
 }
@@ -131,6 +132,10 @@ float get_width(float dist1, int angle)
     return 2 * dist1 * sin((double) (new_angle) / 2);
 }
 
+float lawOfCosines(float b, float c, int A) {
+    return pow((pow(b,2)+pow(c,2)-(2*b*c*cos(A*2*M_PI/360))),.5);
+}
+#define MAX_RADIUS 7
 char objsFrmScns(scanned_obj *objarray)
 {
     //these and those in the above function should be in a struct or something
@@ -149,15 +154,18 @@ char objsFrmScns(scanned_obj *objarray)
         float second_dist;
 
         scan_handle current_scan = all_scans[i];
-
-        if ((current_scan.IR) < MAX_DISTANCE)
+            ///if we find an object, and the next scan is not wayyy different
+        if (((current_scan.IR) < MAX_DISTANCE) && (abs(all_scans[i+1].IR-current_scan.IR)<MAX_RADIUS))
         {
             first_angle = i;
             first_dist=current_scan.IR;
 
-            while ((current_scan.IR) < MAX_DISTANCE)
+            ///find second angle
+            while (((current_scan.IR) < MAX_DISTANCE) && (abs(all_scans[i+1].IR-current_scan.IR)<MAX_RADIUS))
             {
+
                 i += deg_multiplier;
+
                 current_scan = all_scans[i];
                 if (i >= 180)
                     break;
@@ -179,9 +187,10 @@ char objsFrmScns(scanned_obj *objarray)
             else {
             objarray[num_objs_list[0]].distance = (float) SonarScan((objarray[num_objs_list[direction]].radial_width/2)+first_angle, &ping);
             }
-            objarray[num_objs_list[direction]].straight_width = get_width(
-                    objarray[num_objs_list[direction]].distance,
-                    second_angle - first_angle);
+            objarray[num_objs_list[direction]].straight_width = get_width(second_dist,  second_angle - first_angle);
+                    ///lawOfCosines((float) second_dist, (float)first_dist, second_angle-first_angle); //get_width(
+                 //   second_dist,
+                 //   second_angle - first_angle);
 
             objarray[num_objs_list[direction]].scan_direction = direction;
             objarray[num_objs_list[direction]].leftDist=second_dist;
@@ -263,7 +272,11 @@ void printScn(scan_handle * scn) {
 int SonarScan(int angle, Ping* ping)
 {
     turn_servo_deg(angle);
-    timer_waitMillis(500);
+    //timer_waitMillis(500);
+    if (VERY_VERBOSE) {
+        botprintf("PING Raw signal: %d", ping->fallingTime);
+
+    }
     return GetSonarDistance(ping);
 }
 
@@ -279,6 +292,26 @@ int IRDistanceScan(int angle)
 }
 int GetActualDistance(int x)
 {
+    if (VERY_VERBOSE) {
+        botprintf("IR Raw signal: %d", x);
+    }
+    int actual;
+    if (MYBOT==9) {
+            double coeff1=1.534e-11;
+            double pow1=4;
+            double coeff2 = -1.081e-7;
+            double  pow2 = 3;
+            double  coeff3 = 2.863e-4;
+           double pow3 = 2;
+            double coeff4 = -3.514e-01;
+            double  k = 1.904e2;
+            //coeff5,k;//pow5,coeff6,pow6,k;
+
+        actual =        (int)((coeff1 * pow((float)x, pow1)) + (coeff2* pow((float)x,pow2)) + (coeff3* pow((float)x, pow3))  + (coeff4 * (float)x) + k);
+    }
+    else {
+
     int actual = (int)((-6.426e-15 * pow((float)x, 5)) + (5.919e-11 * pow((float)x, 4)) + (-2.175e-7 * pow((float)x, 3)) + (4.075e-4 * pow((float)x, 2)) + (-4.079e-1 * (float)x) + 1.991e2);
+    }
     return actual;
 }
