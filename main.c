@@ -69,7 +69,9 @@ void muh_calibrate()
 }
 
 int main(void){
+    //timer_init();
     timer_init();
+
     oi_t* interface = oi_alloc();
     oi_init(interface);
     ////reboot it to clear any f errors

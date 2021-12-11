@@ -13,7 +13,7 @@
  * BIG STUFF HERE
  */
 ///WHICH BOT
-#define MYBOT 9
+#define MYBOT 12
 //print more data
 #define VERBOSE 2
 #if VERBOSE==2
@@ -96,8 +96,8 @@ extern int GUI;
 #if MYBOT==2
 #define IR_EXP -1.604
 #define IR_COEFF 3000000
-#define SERVO_LEFT 1303750
-#define SERVO_RIGHT 280000
+#define SERVO_LEFT 0x5040
+#define SERVO_RIGHT 0xC340
 #endif
 
 
@@ -128,10 +128,14 @@ extern int GUI;
 #define SERVO_RIGHT 0xC780
 #endif
 #if MYBOT==9
-#define SERVO_LEFT 0x5413
-#define SERVO_RIGHT 0xC013
+#define SERVO_LEFT 0x5313
+#define SERVO_RIGHT 0xC053
 #endif
 
+#if MYBOT==12
+#define SERVO_LEFT 0x5008
+#define SERVO_RIGHT 0xBE48
+#endif
 //null values:
 #ifndef IR_EXP
 #define IR_EXP  1

@@ -29,7 +29,7 @@ volatile char data_received_flag = 0;
 #define SYS_CLOCK 0x0
 #define REPLACE_ME 0x0
 
-int GUI=1;
+int GUI=0;
 
 void uart_init(int baud)
 {

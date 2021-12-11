@@ -89,6 +89,13 @@ void better_servo_init()
     servo_180=SERVO_LEFT;
 }
 
+int deg_to_clkF(float degrees) {
+   // float val = ((servo_zero - servo_180) * (180 - degrees)) / 180.0;
+       double dval =(((double)servo_zero - (double)servo_180) * ((double)180 - (double)degrees)) / (double)180.0;
+       //return servo_180 + val;
+       return servo_180+ (int)dval;
+
+}
 //Take degrees, turn it into a clock value to set the TIMER1_TBMATCHR_R to
 unsigned int deg_to_clk(char degrees)
 {
@@ -124,6 +131,16 @@ int turn_servo_deg(char degrees)
     return -1;
 }
 
+int turn_servo_degF(float degrees) {
+    static float last_deg=0;
+    if (degrees < 181) {
+        unsigned int clock_cycles = deg_to_clk(degrees);
+               move_servo(clock_cycles);
+               timer_waitMillis(abs(last_deg-degrees)*10);
+               last_deg = degrees;
+    }
+}
+
 int move_servo(unsigned int clck_cycle)
 {
     //timer_waitMillis(100);
@@ -141,7 +158,7 @@ void servo_calibration()
         GET_0_DEG, GET_180_DEG, DONE
     };
     enum calibstate curstate = GET_0_DEG;
-    int incamount = 0x200;
+    int incamount = 0x40;
     do
     {
         char keydown = char_input(NULL);

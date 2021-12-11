@@ -124,7 +124,36 @@ int simpleScan(char deg, scan_handle * scn) {
 }
 
 
+int build_close_object(int first_angle, int second_angle, float first_dist, float second_dist) {
 
+    int nscans=180;
+    // ---===Update Object Values===---
+            front_objects[num_objs_list[0]].angle = first_angle;
+            front_objects[num_objs_list[0]].angle2 = second_angle;
+            front_objects[num_objs_list[0]].radial_width = second_angle- first_angle;
+
+                //using ping for distance at middle of object
+            Ping  ping;
+            if (nscans==180) {
+                front_objects[num_objs_list[0]].distance =all_scans[(  front_objects[num_objs_list[0]].radial_width)+first_angle].ping;
+            }
+            else {
+                front_objects[num_objs_list[0]].distance = (float) SonarScan((  front_objects[num_objs_list[0]].radial_width/2)+first_angle, &ping);
+            }
+            front_objects[num_objs_list[0]].straight_width = get_width(  front_objects[num_objs_list[0]].distance,  second_angle - first_angle);
+                    ///lawOfCosines((float) second_dist, (float)first_dist, second_angle-first_angle); //get_width(
+                 //   second_dist,
+                 //   second_angle - first_angle);
+
+            front_objects[num_objs_list[0]].scan_direction = 0;
+            front_objects[num_objs_list[0]].leftDist=second_dist;
+            front_objects[num_objs_list[0]].rightDist=first_dist;
+
+            if ((second_angle - first_angle) > 0 ){
+                            num_objs_list[0]++;
+            }
+
+}
 
 float get_width(float dist1, int angle)
 {
@@ -135,7 +164,7 @@ float get_width(float dist1, int angle)
 float lawOfCosines(float b, float c, int A) {
     return pow((pow(b,2)+pow(c,2)-(2*b*c*cos(A*2*M_PI/360))),.5);
 }
-#define MAX_RADIUS 7
+#define MAX_RADIUS 8
 char objsFrmScns(scanned_obj *objarray)
 {
     //these and those in the above function should be in a struct or something
@@ -154,22 +183,59 @@ char objsFrmScns(scanned_obj *objarray)
         float second_dist;
 
         scan_handle current_scan = all_scans[i];
-            ///if we find an object, and the next scan is not wayyy different
-        if (((current_scan.IR) < MAX_DISTANCE) && (abs(all_scans[i+1].IR-current_scan.IR)<MAX_RADIUS))
+        int MAX_PING_DISTANCE=14;
+
+
+
+        /// if we detect a close object. the ping is very accurate at close range.
+        int detected_closeObject;
+        if ((all_scans[i].ping<MAX_PING_DISTANCE) && (all_scans[i+1].ping<MAX_PING_DISTANCE)) {
+            detected_closeObject=1;
+            first_angle = i;
+            first_dist=current_scan.ping;
+            while ((current_scan.ping<MAX_PING_DISTANCE) && (i<179) && (abs(all_scans[i+1].ping-current_scan.ping)<MAX_RADIUS)) {
+                i++;
+                current_scan=all_scans[i];
+            }
+
+            second_angle=i-1;
+            second_dist=all_scans[i-1].ping;
+            build_close_object(first_angle, second_angle, first_dist, second_dist);
+
+
+        }
+
+        ///if we find an object, and the next scan is not wayyy different
+
+        if ((i<179)&&(((current_scan.IR) < MAX_DISTANCE) && (abs(all_scans[i+1].IR-current_scan.IR)<MAX_RADIUS)))
         {
             first_angle = i;
             first_dist=current_scan.IR;
+            int max_dist=current_scan.IR;
+            int min_dist=current_scan.IR;
 
             ///find second angle
-            while (((current_scan.IR) < MAX_DISTANCE) && (abs(all_scans[i+1].IR-current_scan.IR)<MAX_RADIUS))
+            while (((current_scan.IR) < MAX_DISTANCE) && ((i==first_angle ) ||  (abs(all_scans[i-1].IR-current_scan.IR)<MAX_RADIUS) ||  (abs(first_dist-current_scan.IR)<MAX_RADIUS) ))
             {
+
+                    ///get the current value of stuff
+                if (current_scan.IR>max_dist) {
+                                  max_dist=current_scan.IR;
+                              }
+                              else if (current_scan.IR<min_dist) {
+                                  min_dist=current_scan.IR;
+                              }
 
                 i += deg_multiplier;
 
                 current_scan = all_scans[i];
+
+
+
                 if (i >= 180)
                     break;
             }
+
             second_angle = i - deg_multiplier;
             second_dist=all_scans[i-deg_multiplier].IR;
 
@@ -187,7 +253,7 @@ char objsFrmScns(scanned_obj *objarray)
             else {
             objarray[num_objs_list[0]].distance = (float) SonarScan((objarray[num_objs_list[direction]].radial_width/2)+first_angle, &ping);
             }
-            objarray[num_objs_list[direction]].straight_width = get_width(second_dist,  second_angle - first_angle);
+            objarray[num_objs_list[direction]].straight_width = get_width(objarray[num_objs_list[0]].distance,  second_angle - first_angle);
                     ///lawOfCosines((float) second_dist, (float)first_dist, second_angle-first_angle); //get_width(
                  //   second_dist,
                  //   second_angle - first_angle);
@@ -250,11 +316,11 @@ void print_found_objects(scanned_obj * objectlist) {
                   botprintf("%d, ",j);
                   botprintf("angle1: %d, ", objectlist[j].angle);
                   botprintf("angle2: %d, ", objectlist[j].angle2);
-                  botprintf("dist: %d, ", (int) objectlist[j].distance);
+                  botprintf("dist: %d, ", (int) round(objectlist[j].distance));
                   botprintf("dist: %lf, ", (double) objectlist[j].distance);
 
                   botprintf("radial width: %d, ", objectlist[j].radial_width);
-                  botprintf("straight width: %d", (int) objectlist[j].straight_width);
+                  botprintf("straight width: %d", (int) round(objectlist[j].straight_width));
 
                   botprintf("\n\r");
                 //         %d        %d          %f          %d     %f\n\r", j, objectlist[j].angle, objectlist[j].angle2, objectlist[j].distance, objectlist[j].radial_width, objectlist[j].straight_width);
@@ -296,7 +362,7 @@ int GetActualDistance(int x)
         botprintf("IR Raw signal: %d", x);
     }
     int actual;
-    if (MYBOT==9) {
+    if (MYBOT==9 ) {
             double coeff1=1.534e-11;
             double pow1=4;
             double coeff2 = -1.081e-7;
@@ -311,7 +377,7 @@ int GetActualDistance(int x)
     }
     else {
 
-    int actual = (int)((-6.426e-15 * pow((float)x, 5)) + (5.919e-11 * pow((float)x, 4)) + (-2.175e-7 * pow((float)x, 3)) + (4.075e-4 * pow((float)x, 2)) + (-4.079e-1 * (float)x) + 1.991e2);
+ actual = (int)((-6.426e-15 * pow((float)x, 5)) + (5.919e-11 * pow((float)x, 4)) + (-2.175e-7 * pow((float)x, 3)) + (4.075e-4 * pow((float)x, 2)) + (-4.079e-1 * (float)x) + 1.991e2);
     }
     return actual;
 }

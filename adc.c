@@ -25,7 +25,7 @@ void adc_init()
     ADC0_SSMUX0_R |= 0xA;
     ADC0_SSCTL0_R |= 0b110;
     ADC0_ACTSS_R |= 0b0001;
-    ADC0_SAC_R |= 0x6;
+    ADC0_SAC_R |= 0x4;
 }
 
 int adc_read(void)

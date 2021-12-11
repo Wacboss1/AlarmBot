@@ -30,7 +30,7 @@ typedef struct
 
 
 
-#define SCANNABLE_DISTANCE 50
+#define SCANNABLE_DISTANCE 60
 
 
 
@@ -45,7 +45,7 @@ typedef struct scan_handle {
 } scan_handle;
 
 char scan180_alarmbot();
-
+float get_width(float dist1, int angle);
 int simpleScan(char deg, scan_handle * scn);
 int scan();
 
