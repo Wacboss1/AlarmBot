@@ -44,6 +44,9 @@
  *also has error bit
  *also
  */
+/*
+ * error codes from IMU
+ */
 static char imu_error_codes[11][100] =
         { "0 No error", "1 Peripheral initialization error",
           "2 System initialization error", "3 Self test result failed",
@@ -54,6 +57,9 @@ static char imu_error_codes[11][100] =
           "9 Fusion algorithm configuration error",
           "A Sensor configuration error" };
 
+/*
+ * Never used this
+ */
 typedef struct imu_handle
 {
     int accX;
@@ -64,12 +70,17 @@ typedef struct imu_handle
     int gyroZ;
 
 } imu_handle;
-
+/*
+ * these message types aren't used much, i mostly use explicit values to rule out any bit logic errors
+ */
 #define STOP_IMU I2C_MCS_STOP             //0x4
 #define START_IMU I2C_MCS_START //0x2
 #define TR_IMU I2C_MCS_RUN             // 0x1
 #define ACK_IMU I2C_MCS_ACK             // 0x8
 
+/*
+ * gets error code from imu
+ */
 int get_imu_error()
 {
     char data;
@@ -77,6 +88,9 @@ int get_imu_error()
     botprintf("%s\n\r", imu_error_codes[data]);
     return error;
 }
+/*
+ *wait for bus to finish processing, i had it using a timout timer, but removed it
+ */
 int wait_while_bus_busy(int milli)
 {
     unsigned int count = timer_getMillis();
@@ -94,7 +108,10 @@ int wait_while_bus_busy(int milli)
         return 0;
     }
 }
-
+/*
+ * This msg is sent to start the I2C for both reads and writes. It sends start+slaveadress+writebit waits for ak, sends register address, waits for ak, and then we start reading or writing
+ * Returns error
+ */
 int access_addr(char add)
 {
     // timer_waitMicros(5);
@@ -104,6 +121,7 @@ int access_addr(char add)
     I2C1_MSA_R = (DEFAULTI2C << 1); //address goes to bits 7-1, what sort of behavior is bit 0
     //  botprintf("should be the same: %X and %X and should be 0x52\n\r",I2C1_MSA_R,DEFAULTI2C<<1);
 
+    ///The target IMU register address
     I2C1_MDR_R = add; ///lololol data
     I2C1_MCS_R = 3; // (TR_IMU | START_IMU);//7 or 3 /// (STOP,START,RUN) ?!?!?!??
     ///bit 0 === master can t/r
@@ -119,6 +137,7 @@ int access_addr(char add)
     {
         //counter++;
     }
+    ///error
     error = I2C1_MCS_R & 0xE;
     if (error)
     {
@@ -128,19 +147,23 @@ int access_addr(char add)
     return 0;
 }
 
-int debugging_reset()
-{
-
-}
+/*
+ * write to one byte of a register
+ * Returns errors
+ */
 int send_byte(char add, char data)
 {
 
+    ///request address from IMU
+    ///
     int error = access_addr(add);
     if (error)
     {
         botprintf("error: %d\n\r", error);
         return error;
     }
+
+    ////put the data to the MDR register to send it
     //   I2C1_MSA_R = (DEFAULTI2C<<1);
     I2C1_MDR_R = data; /// data
     //I2C1_MCS_R &=0xFFFFFFE0;
@@ -157,12 +180,15 @@ int send_byte(char add, char data)
         return error;
     }
 
-    ///set gpio to read
+    ///
     ///
     return 0;
 
 }
 
+/*
+ * get multiple bytes of data in one read. stores them in a buffer of countC size
+ */
 int get_bytes(char add, char buffer[], int countC)
 {
     int error = access_addr(add);
@@ -171,7 +197,7 @@ int get_bytes(char add, char buffer[], int countC)
         botprintf("error: %d\n\r", error);
         return error;
     }
-
+    ///set address bit to READ
     I2C1_MSA_R = (DEFAULTI2C << 1) | 0x1;
     int i = 0;
 
@@ -182,7 +208,9 @@ int get_bytes(char add, char buffer[], int countC)
      #define ACK_IMU I2C_MCS_ACK             // 0x8
      *
      */
-    I2C1_MSA_R = (DEFAULTI2C << 1) | 0x1;
+
+
+    ///first packet has a start, run and also sends an ack bit which tells i2c to keep sending registers, adress incremented from starting register
 
     I2C1_MCS_R = 0xB; //(I2C_MCS_START | I2C_MCS_RUN | I2C_MCS_ACK);  ///(START | ACK| TR)
     while (I2C1_MCS_R & 0x1) //while busy
@@ -191,6 +219,7 @@ int get_bytes(char add, char buffer[], int countC)
     }
     buffer[0] = I2C1_MDR_R;
 
+    ///for the rest of the bytes before the last one, we only set RUN and AK bits in MCR
     for (i = 1; i < (countC - 1); i++)
     {
         //I2C1_MCS_R
@@ -203,6 +232,9 @@ int get_bytes(char add, char buffer[], int countC)
         }
         buffer[i] = I2C1_MDR_R;
     }
+
+    //// the last register read does not send an AK, and also sends a STOP
+
     //I2C1_MSA_R = (DEFAULTI2C<<1) | 0x1;
     I2C1_MCS_R = (0x5); // RUN STOP
     while (I2C1_MCS_R & 0x1) //while busy
@@ -215,7 +247,9 @@ int get_bytes(char add, char buffer[], int countC)
     return 0;
 
 }
-
+/*
+ * read a single byte of a register
+ */
 int get_byte(char add, char *data)
 {
     int error = 0;
@@ -259,9 +293,8 @@ int init_imu()
     ///GPIO A pins 6,7
     SYSCTL_RCGCGPIO_R |= 0x01;              // enable clock GPIOA (page 340)
     GPIO_PORTA_AFSEL_R &= 0x3F;
-    GPIO_PORTA_AFSEL_R |= 0xC0;
+    GPIO_PORTA_AFSEL_R |= 0xC0;          ///use I2C
     GPIO_PORTA_DEN_R |= 0b11000000;
-
     GPIO_PORTA_PCTL_R &= 0x00FFFFFF;
     GPIO_PORTA_PCTL_R |= 0x33000000;
 
@@ -280,6 +313,8 @@ int init_imu()
     timer_waitMillis(30);
 //    debugging_reset();
     send_byte(SYS_TRIGGER, 0x10); ///reset the imu
+                            //////////// This doesn't seem to work
+                        //////////// we normally get a write error from the IMU
     timer_waitMillis(30);
 
     get_imu_error();
@@ -332,7 +367,10 @@ int init_imu()
 
     return 0;
 }
-
+/*
+ * this only works when the IMU is not in the right mode. I think trying to set it to the same mode triggers register read error. The mode we use is NDOF_MODE
+ * This does not initiate high speed mode, but a fusion mode which uses fast mode, maximum read of speed is 100 kbps
+ */
 int init_high_speed()
 {
     int test_data;
@@ -351,6 +389,9 @@ int init_high_speed()
     return 0;
 
 }
+/*
+ * reads the raw gyroscope values and puts them in gyrodata
+ */
 int get_gyro(char gyrodata[])
 {
 
@@ -371,7 +412,9 @@ int get_gyro(char gyrodata[])
 
     return error;
 }
-
+/*
+ * reads only the two bytes of the heading register to give our Z axis rotation.
+ */
 int get_rotation(signed short *data)
 {
     char charbuff[2];
@@ -387,6 +430,9 @@ int get_rotation(signed short *data)
     }
     *data = charbuff[0] + (((signed short) charbuff[1]) << 8);
 }
+/*
+ * this gets the heading, pitch, and roll from the imu
+ */
 int get_orientation(signed short buffer[])
 {
     char charbuff[6];
@@ -406,7 +452,9 @@ int get_orientation(signed short buffer[])
 
     return error;
 }
-
+/*
+ * this gets the acceleration of the imu
+ */
 int getAcc(signed short buffer[])
 {
     char charbuff[6];
@@ -425,6 +473,9 @@ int getAcc(signed short buffer[])
     buffer[2] = charbuff[4] + (((signed short) charbuff[5]) << 8);
 
 }
+/*
+ * this does not actually the velocity, i just don't want to rename it and have to fix the other place wher eit is used
+ */
 int getVel(signed short buffer[])
 {
     char charbuff[6];
@@ -444,10 +495,7 @@ int getVel(signed short buffer[])
 
 }
 
-int parse_packets(char packets[])
-{
 
-}
 /*
  * //*****************************************************************************
  //

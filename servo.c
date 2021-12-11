@@ -130,7 +130,9 @@ int turn_servo_deg(char degrees)
 
     return -1;
 }
-
+/*
+ * turn servo by a float, not implmemented
+ */
 int turn_servo_degF(float degrees) {
     static float last_deg=0;
     if (degrees < 181) {
@@ -140,7 +142,9 @@ int turn_servo_degF(float degrees) {
                last_deg = degrees;
     }
 }
-
+/*
+ * move serbo by clock cycle
+ */
 int move_servo(unsigned int clck_cycle)
 {
     //timer_waitMillis(100);
@@ -148,7 +152,9 @@ int move_servo(unsigned int clck_cycle)
    // timer_waitMillis(100);
     return 0;
 }
-
+/*
+ * calibrate servo
+ */
 void servo_calibration()
 {
     botprintf(
@@ -191,7 +197,9 @@ void servo_calibration()
     }
     while (curstate != DONE);
 }
-
+/*
+ * another calibration but using lcd and buttons instead of uart
+ */
 void lab10_part2()
 {
     button_init();
@@ -288,7 +296,9 @@ void lab10_part2()
  return servo_180 + val;
  *
  */
-
+/*
+ * get our current servo location as a degree
+ */
 char get_deg()
 {
 

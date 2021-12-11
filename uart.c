@@ -28,8 +28,10 @@ volatile char data_received_flag = 0;
 #define FORMAT_FRAME 0x00000060
 #define SYS_CLOCK 0x0
 #define REPLACE_ME 0x0
-
-int GUI=0;
+/*
+ * GUI MODE DEFAULT VALUE
+ */
+int GUI=1;
 
 void uart_init(int baud)
 {
@@ -63,7 +65,9 @@ void uart_init(int baud)
     UART1_CTL_R |= 0x00000301;         // enable UART1
 
 }
-
+/*
+ * basic send a character
+ */
 void uart_sendChar(char data)
 {
    //TODO
@@ -75,6 +79,9 @@ void uart_sendChar(char data)
 
    
 }
+/*
+ * recieve a c string, one character at a time from uart
+ */
 
 void uart_getString(char * buffer[], int maxC) {
     int i = 0;
@@ -85,6 +92,13 @@ void uart_getString(char * buffer[], int maxC) {
     }  while ( buffer[i-1]!='\0' && (i<(maxC-1)));
 }
 
+/*
+ * Our main function for printing formatted output to putty
+ * if GUI is on, this function does nothing
+ *
+ *
+ *
+ */
 void botprintf(char *format, ...)
 {
     if (GUI) {
@@ -110,6 +124,9 @@ void botprintf(char *format, ...)
 #define E_BREAK  0x4
 #define E_PAR 0x2
 #define E_FRAME 0x01
+/*
+ * check and print uart errors
+ */
 char uart_error(char clear) {
     //value unimplemented
     char errors;
@@ -137,7 +154,9 @@ char uart_error(char clear) {
 return errors;
 }
 
-
+/*
+ * uart recieve a byte function
+ */
 char uart_receive(void)
 {
 #define NOTRECIEVED 0x00000010
@@ -168,7 +187,9 @@ char uart_receive(void)
     return (char) (UART1_DR_R & 0xFF);
   //  return (char) (UART1_DR_R);
 }
-
+/*
+ * sends a string over uart, one character at a time
+ */
 void uart_sendStr(const char *data)
 {
 
@@ -180,7 +201,9 @@ void uart_sendStr(const char *data)
 }
 
 // _PART3
-
+/*
+ * interupt
+ */
 
 void uart_interrupt_init()
 {
@@ -195,7 +218,9 @@ void uart_interrupt_init()
     IntRegister(INT_UART1, &uart_interrupt_handler); //give the microcontroller the address of our interrupt handler - page 104 22 is the vector number
 
 }
-
+/*
+ * uart handler
+ */
 void uart_interrupt_handler()
 {
 // STEP1: Check the Masked Interrup Status
@@ -206,7 +231,9 @@ void uart_interrupt_handler()
         UART1_ICR_R |=0x10;
     }
 }
-
+/*
+ * get a character and use a timeout parameter to keep from hanging
+ */
 char char_input(int wait_time_ms) {
     int start_time =timer_getMillis();
     int cur_time =start_time;
@@ -232,23 +259,17 @@ char char_input(int wait_time_ms) {
 
     }
 
+/*
+ * char_input but with no timeout
+ */
+
 char getChar() {
     return char_input(NULL);
 
 }
-
-int getInt() {
-
-    char c;
-    int outint;
-    /*
-    do {
-        c= getChar();
-
-    }
-    while (c!=0x0D);
-    */
-}
+/*
+ * check volatile thingy set by interupt to see if weve recieved input
+ */
 char is_input() {
     if (data_received_flag) {
         return 1;

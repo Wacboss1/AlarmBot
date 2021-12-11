@@ -20,6 +20,9 @@
 #include "imu.h"
 #include"scan.h"
 
+
+
+///a basic IR calibration function
 void muh_calibrate()
 {
     int i = 0;
@@ -68,13 +71,58 @@ void muh_calibrate()
 
 }
 
+////A more involved calibration functino that i never got accurate
+void new_calibrate(oi_t * sensor) {
+    int i=0;
+    int max = 50;
+    int nTriesPerDist=20;
+    turn_servo_deg(90);
+
+    while (i<max){
+        double total = 0;
+             double ping_total = 0;
+             move_specific_distance(sensor,-1);
+             timer_waitMillis(300);
+
+             Ping pingy;
+             int j;
+             for (j = 0; j < (int) nTriesPerDist; j++)
+             {
+                 ping_total=0;
+                 //SCAN_(105, &temp);
+                // adc_read(void)
+                 timer_waitMillis(40);
+                 int poo = 0;
+                 for (poo=0;poo<5;poo++) {
+                     timer_waitMillis(5);
+
+                     ping_total+=GetSonarDistance(&pingy);
+
+                 }
+                 ping_total=ping_total/5;
+                 total = (double)adc_read();
+                 botprintf("%lf,%lf\n\r",ping_total,total);
+
+
+             }
+         //    ping_total=ping_total/10;
+           //  total = total/10.0;
+             //botprintf("%lf,%lf\n\r",ping_total,total);
+
+
+        i++;
+    }
+
+
+}
+
 int main(void){
     //timer_init();
     timer_init();
 
     oi_t* interface = oi_alloc();
     oi_init(interface);
-    ////reboot it to clear any f errors
+    ////reboot as a superstitious error prevention mechanism
     oi_close();
     oi_free(interface);
     interface = oi_alloc();
@@ -89,12 +137,17 @@ int main(void){
     uart_interrupt_init();
 
 
-    botprintf("battery: %d out of %d\n\r",interface->batteryCharge,interface->batteryCapacity );
+   // botprintf("battery: %d out of %d\n\r",interface->batteryCharge,interface->batteryCapacity );
     lcd_printf("battery: %d out of %d\n",interface->batteryCharge,interface->batteryCapacity);
     //configure_wheels(interface);
 
     init_imu();
+
     int error=init_high_speed();
+//    getChar();
+
+  //  new_calibrate(interface);
+
         if (error) {
             botprintf("failed init highspeed\n\r");
             return;
@@ -111,9 +164,10 @@ int main(void){
     ///servo calibration tests
     turn_servo_deg(0);
 
+    ///start our manual mode
     manual_mode(interface);
 
-
+        ///debugging/configuration commands loop
         while (1) {
             if (is_input()) {
                 char c =  getChar();
@@ -127,8 +181,8 @@ int main(void){
                     break;
                 case '2':
                     //scan tests
-                    botprintf("scan tests");
-
+                   // botprintf("scan tests");
+                    new_calibrate(interface);
                     break;
                 case '3':
                     ///test the cliff sensors functions

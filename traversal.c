@@ -1,5 +1,7 @@
 /*
  * traversal.c
+ * This is mostly autonomous mode code. very little is implmemented.
+ * The only one used is obj_in_way
  *
  *  Created on: Nov 30, 2021
  *      Author: ndgartin
@@ -69,6 +71,9 @@ enum Cliff_status
 #define CLIFF_HIT 1
 #define EDGE_HIT 2
 
+/*
+ * This almost works, but not always. just checks if the object is going to be hit if bot moves forward
+ */
 ///returns 1 if object is in the way
 int obj_in_way(scanned_obj * obj) {
    int botRad=18; //its actually 18ish
@@ -96,6 +101,9 @@ int obj_in_way(scanned_obj * obj) {
 }
 char inwaymsg[2][20] = {"not in the way","in the way"}; ///"it would hit the rightbumper","it would hitleft","its completely in theway","its a huge wall"};
 ///check all the objects if they are in the way
+/*
+ * prints results from obj_in_way
+ */
 int print_objs_in_way() {
     int i =0;
     for (i=0;i<num_objs_list[0];i++) {

@@ -9,6 +9,8 @@
 #include "Timer.h"
 #include <inc/tm4c123gh6pm.h>
 
+///initiates IR sensor
+//// uses 16 hardware averaging values
 void adc_init()
 {
     //configure GPIO ports for the ADC
@@ -28,6 +30,7 @@ void adc_init()
     ADC0_SAC_R |= 0x4;
 }
 
+///read an IR sensor value
 int adc_read(void)
 {
     ADC0_PSSI_R = 0b0001;

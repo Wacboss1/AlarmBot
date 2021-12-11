@@ -1,6 +1,6 @@
 /*
  * gui.c
- *
+ * GUI sends one byte at a time with the UART. on the software level, each message is 8 bytes long. The first byte is the message type
  *  Created on: Dec 9, 2021
  *      Author: ndgartin
  */
@@ -8,12 +8,18 @@
 #include "scan.h"
 #include "gui.h"
 #include "movement.h"
-
+/*
+ * Start message is sent to gui to say that we started executing a command
+ * completed message is sent at the end of the command execution, or if the command is unrecognized
+ */
  const msg_struct START_MSG= {START_GUI,{0,0,0,0,0,0,0}};
 const msg_struct COMPLETED_MSG = {COMPLETED_GUI,{0,0,0,0,0,0,0}};
 
 extern int FieldEdgeFound;
 
+
+///// Send a message
+/// over uart
 int sendMsg(msg_struct * msg) {
     char * curByte = msg;
     int i;
@@ -23,7 +29,10 @@ int sendMsg(msg_struct * msg) {
     }
 
 }
-
+/*
+ * Processes a scanned object into a message and sends it
+ * sends distance, angle, and radius
+ */
 int sendScannedObj(scanned_obj * obj) {
     obj_msg msg;
     msg.msgType=OBJ_GUI;
@@ -34,6 +43,9 @@ int sendScannedObj(scanned_obj * obj) {
     return 0;
 
 }
+/*
+ * testing function to check that memory is read correctly
+ */
 
 msg_struct buildObjMsg(scanned_obj * obj) {
     obj_msg msg;
@@ -54,7 +66,9 @@ msg_struct buildObjMsg(scanned_obj * obj) {
     return rawmsg;
 
 }
-
+/*
+ *sends bump flags message, contains Bump, cliff, edge , and also distance traveled before bot hit edge
+ */
 int sendBumpMsg(unsigned int bumpFlags, int dist) {
     bump_msg msg;
     msg.msgType=BUMP_GUI;

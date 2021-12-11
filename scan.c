@@ -15,15 +15,20 @@
 #include "uart.h"
 //#include "distancesensor.h"
 #define   _SCAN(a,b) simpleScan(a, b)
- int num_objs_list[4];
+
+///this is 4 int array because we imported it from our lab stuff where we would scan in 4 directions
+int num_objs_list[4];
+///buffer for found objects
 scanned_obj front_objects[20];
 
+///buffer for scans
 scan_handle all_scans[180];
 
-
+////shouldn't be used anymore
 #define IR_TO_DIST(a)  (a)
 
 //#define USE_DUMMYSCANS
+//// to save time, for debugging, use fake scan data
 #ifdef USE_DUMMYSCANS
 char scan180_alarmbot() {
     scan_handle dummy_scans[180] = {{0,141,148},{0,0,0},{0,0,0},{0,0,0},{0,74,134},{0,0,0},{0,0,0},{0,0,0},{0,66,177},{0,0,0},{0,0,0},{0,0,0},{0,141,177},{0,0,0},{0,0,0},{0,0,0},{0,141,166},{0,0,0},{0,0,0},{0,0,0},{0,61,177},{0,0,0},{0,0,0},{0,0,0},{0,73,170},{0,0,0},{0,0,0},{0,0,0},{0,85,171},{0,0,0},{0,0,0},{0,0,0},{0,86,160},{0,0,0},{0,0,0},{0,0,0},{0,67,170},{0,0,0},{0,0,0},{0,0,0},{0,73,121},{0,0,0},{0,0,0},{0,0,0},{0,95,171},{0,0,0},{0,0,0},{0,0,0},{0,141,92},{0,0,0},{0,0,0},{0,0,0},{0,261,76},{0,0,0},{0,0,0},{0,0,0},{0,291,115},{0,0,0},{0,0,0},{0,0,0},{0,141,127},{0,0,0},{0,0,0},{0,0,0},{0,72,176},{0,0,0},{0,0,0},{0,0,0},{0,139,176},{0,0,0},{0,0,0},{0,0,0},{0,141,176},{0,0,0},{0,0,0},{0,0,0},{0,28,122},{0,0,0},{0,0,0},{0,0,0},{0,27,25},{0,0,0},{0,0,0},{0,0,0},{0,36,18},{0,0,0},{0,0,0},{0,0,0},{0,20,17},{0,0,0},{0,0,0},{0,0,0},{0,20,16},{0,0,0},{0,0,0},{0,0,0},{0,20,16},{0,0,0},{0,0,0},{0,0,0},{0,20,16},{0,0,0},{0,0,0},{0,0,0},{0,20,17},{0,0,0},{0,0,0},{0,0,0},{0,27,19},{0,0,0},{0,0,0},{0,0,0},{0,27,36},{0,0,0},{0,0,0},{0,0,0},{0,131,97},{0,0,0},{0,0,0},{0,0,0},{0,129,107},{0,0,0},{0,0,0},{0,0,0},{0,127,155},{0,0,0},{0,0,0},{0,0,0},{0,131,176},{0,0,0},{0,0,0},{0,0,0},{0,130,174},{0,0,0},{0,0,0},{0,0,0},{0,131,150},{0,0,0},{0,0,0},{0,0,0},{0,130,122},{0,0,0},{0,0,0},{0,0,0},{0,131,114},{0,0,0},{0,0,0},{0,0,0},{0,131,141},{0,0,0},{0,0,0},{0,0,0},{0,129,114},{0,0,0},{0,0,0},{0,0,0},{0,153,177},{0,0,0},{0,0,0},{0,0,0},{0,168,177},{0,0,0},{0,0,0},{0,0,0},{0,141,177},{0,0,0},{0,0,0},{0,0,0},{0,222,177},{0,0,0},{0,0,0},{0,0,0},{0,141,177},{0,0,0},{0,0,0},{0,0,0},{0,141,177},{0,0,0},{0,0,0},{0,0,0}};
@@ -35,6 +40,10 @@ char scan180_alarmbot() {
     }
 }
 #else
+/*
+ * our main 180 scan
+ * it currently scans 180 degrees and if that value is changed, it might mess up object building
+ */
 char scan180_alarmbot()
 {
 
@@ -89,7 +98,9 @@ char scan180_alarmbot()
     return 0;
 }
 #endif
-
+/*
+ * it just scans and  prints scans
+ */
 int test_scans_print_scans() {
     scan180_alarmbot();
 
@@ -100,7 +111,10 @@ int test_scans_print_scans() {
     }
 
 }
-
+/*
+ * the main scan function it scans one degree and stors the distance values in a struct
+ * lots of commented out timing print messages, for debugging slow scans
+ */
 int simpleScan(char deg, scan_handle * scn) {
    // unsigned int startTime = timer_getMillis();
     turn_servo_deg(deg);
@@ -122,7 +136,10 @@ int simpleScan(char deg, scan_handle * scn) {
 
     return 0;
 }
-
+/*
+ * build an object by using ping to determine the last angle
+ * used for objects within 16 cm
+ */
 
 int build_close_object(int first_angle, int second_angle, float first_dist, float second_dist) {
 
@@ -154,17 +171,21 @@ int build_close_object(int first_angle, int second_angle, float first_dist, floa
             }
 
 }
-
+/*
+ * build the straight width of object with the ping distance at the center of the object, so not perfectly accurate
+ */
 float get_width(float dist1, int angle)
 {
     float new_angle = angle * 3.14159 / 180;
     return 2 * dist1 * sin((double) (new_angle) / 2);
 }
-
+/*
+ * law of cosines would be better but our edge values were off all the time
+ */
 float lawOfCosines(float b, float c, int A) {
     return pow((pow(b,2)+pow(c,2)-(2*b*c*cos(A*2*M_PI/360))),.5);
 }
-#define MAX_RADIUS 8
+#define MAX_RADIUS 8    ////maximum allowed radius of an object, assuming the object is circular. for detecting whether or not the scan data is still giving us an object
 char objsFrmScns(scanned_obj *objarray)
 {
     //these and those in the above function should be in a struct or something
@@ -244,8 +265,12 @@ char objsFrmScns(scanned_obj *objarray)
                     break;
             }
 
+
             second_angle = i - deg_multiplier;
             second_dist=all_scans[i-deg_multiplier].IR;
+
+            //bilds the object
+
 
             ///thisssssssssssssssssssssssssssssssss use this
             scanned_obj * theobject = &objarray[num_objs_list[direction]];
@@ -317,6 +342,9 @@ char objsFrmScns(scanned_obj *objarray)
     return 0;
 
 }
+/*
+ * prints all found ojbecs
+ */
 void print_found_objects(scanned_obj * objectlist) {
     int direction = 0;
 
@@ -339,16 +367,19 @@ void print_found_objects(scanned_obj * objectlist) {
                   botprintf("\n\r");
                 //         %d        %d          %f          %d     %f\n\r", j, objectlist[j].angle, objectlist[j].angle2, objectlist[j].distance, objectlist[j].radial_width, objectlist[j].straight_width);
             }
-            //botprintf("FuCK\n\n\r");
 
 
 }
-
+/*
+ * print a single scan
+ */
 void printScn(scan_handle * scn) {
     //int dist = GetActualDistance(scn->IR);
     botprintf("deg: %d, ping: %d, dist(IR): %d\n\r",scn->angle,scn->ping,scn->IR);
 }
-
+/*
+ * do a sonar scan and print distance value
+ */
 int SonarScan(int angle, Ping* ping)
 {
     turn_servo_deg(angle);
@@ -359,17 +390,25 @@ int SonarScan(int angle, Ping* ping)
     }
     return GetSonarDistance(ping);
 }
-
+/*
+ * do and print ir raw value
+ */
 int IRRawScan(int angle)
 {
     turn_servo_deg(angle);
     return adc_read();
 }
+/*
+ * ir read and print value
+ */
 int IRDistanceScan(int angle)
 {
     turn_servo_deg(angle);
     return GetActualDistance(adc_read());
 }
+/*
+ * This is formula used for IR scan. we used lots of different formulas
+ */
 int GetActualDistance(int x)
 {
     if (VERY_VERBOSE) {
@@ -377,7 +416,24 @@ int GetActualDistance(int x)
     }
     int actual;
     if (MYBOT==9 ) {
-            double coeff1=1.534e-11;
+///y = -4E-07x5 + 0.0003x4 - 0.0598x3 + 5.2783x2 - 220.62x + 4215.7
+            //y = 0.0002x4 - 0.0562x3 + 5.0168x2 - 207.83x + 4065.8
+/*
+        double coeff1=-1E-07;
+                    double pow1=3;
+                    double coeff2 = .0005;
+                    double  pow2 = 2;
+                    double  coeff3 = -.0544;
+                   double pow3 = 1;
+                    double coeff4 =0;
+                    double  k = 234.69;
+                    double noooooooo = ((coeff1 * pow((double)x, pow1)) + (coeff2* pow((double)x,pow2)) + (coeff3* pow((double)x, pow3))  + k);
+                    actual = (int)((coeff1 * pow((double)x, pow1)) + (coeff2* pow((double)x,pow2)) + (coeff3* pow((double)x, pow3))  + k);
+*/
+
+
+     //    * This one is off by 2 cm,
+          double coeff1=1.534e-11;
             double pow1=4;
             double coeff2 = -1.081e-7;
             double  pow2 = 3;
@@ -385,9 +441,11 @@ int GetActualDistance(int x)
            double pow3 = 2;
             double coeff4 = -3.514e-01;
             double  k = 1.904e2;
+
             //coeff5,k;//pow5,coeff6,pow6,k;
 
         actual =        (int)((coeff1 * pow((float)x, pow1)) + (coeff2* pow((float)x,pow2)) + (coeff3* pow((float)x, pow3))  + (coeff4 * (float)x) + k);
+
     }
     else {
 

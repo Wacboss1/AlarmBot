@@ -8,6 +8,8 @@
 #ifndef MANUAL_MODE_H_
 #define MANUAL_MODE_H_
 
+
+////our  manual mode loop
 void manual_mode(oi_t * sensor);
 
 

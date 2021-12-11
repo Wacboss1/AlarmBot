@@ -11,7 +11,9 @@
 #include "Timer.h"
 #include <inc/tm4c123gh6pm.h>
 
+///init IR
 void adc_init(void);
+///run ir
 int adc_read(void);
 
 #endif /* ADC_H_ */

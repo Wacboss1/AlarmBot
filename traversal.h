@@ -1,5 +1,8 @@
 /*
  * traversal.h
+ ** This is mostly autonomous mode code. very little is implmemented.
+ * The only one used is obj_in_way and print_obj_in_way
+ *
  *
  *  Created on: Nov 30, 2021
  *      Author: ndgartin

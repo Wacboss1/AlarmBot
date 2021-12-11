@@ -9,10 +9,10 @@
 #define SCAN_H_
 
 #include "sonar.h"
-
+/////////Maximum distance for an object
 #define MAX_DISTANCE 50
 
-
+////holds the object information, everything is used but angle and scan direction
 typedef struct
 {
     int angle;
@@ -29,7 +29,7 @@ typedef struct
 
 
 
-
+///////////i don't remember which one we use. this or MAX_DISTANCE
 #define SCANNABLE_DISTANCE 60
 
 
@@ -37,7 +37,7 @@ typedef struct
 
 
 #define NFRONTOBJ num_objs_list[0]
-
+///a scan handle
 typedef struct scan_handle {
     int angle;
     int  ping;

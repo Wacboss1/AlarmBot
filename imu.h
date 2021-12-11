@@ -56,14 +56,38 @@ A Sensor configuration error
 #define POWER_MODE 0x3E   //should be 0x00 by default
 int init_imu();
 //unsigned int get_16bit(char add);
-int get_uint(char add, unsigned int * data);
+
+/*
+ * get multiple bytes
+ */
 int get_bytes(char add, char buffer[], int countC);
+/*
+ * get gyroscop values
+ */
 int get_gyro(char gyrodata[]);
+/*
+ * start fusion mode
+ */
 int init_high_speed();
+/*
+ * get heading, pitch, and roll, needs 6 byte buffer
+ */
 int get_orientation(signed short buffer[]);
+/*
+ * get heading only, needs 2 byte buffer
+ */
 int get_rotation(signed short * data);
+/*
+ * returns the imu  error register value
+ */
 int get_imu_error();
+/*
+ * gets acceleration
+ */
 int getAcc(signed short buffer[]);
+/*
+ * gets linear acceleration
+ */
 int getVel(signed short buffer[]);
 
 #endif /* IMU_H_ */

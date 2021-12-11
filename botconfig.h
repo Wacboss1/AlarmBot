@@ -1,10 +1,12 @@
 /*
  * botconfig.h
  *
+ * Most of the configurations for different bots are here. Most of the debugging/output defines are here
+ *
  *  Created on: Oct 18, 2021
  *      Author: ndgartin
  */
-//USING Gui OR putty
+
 
 #ifndef BOTCONFIG_H_
 #define BOTCONFIG_H_
@@ -13,7 +15,7 @@
  * BIG STUFF HERE
  */
 ///WHICH BOT
-#define MYBOT 12
+#define MYBOT 9
 //print more data
 #define VERBOSE 2
 #if VERBOSE==2
@@ -128,8 +130,8 @@ extern int GUI;
 #define SERVO_RIGHT 0xC780
 #endif
 #if MYBOT==9
-#define SERVO_LEFT 0x5313
-#define SERVO_RIGHT 0xC053
+#define SERVO_LEFT 0x52D3
+#define SERVO_RIGHT 0xC0D3
 #endif
 
 #if MYBOT==12

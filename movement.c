@@ -9,16 +9,22 @@
 #include "uart.h"
 #include <math.h>
 
+////I don't think this is used anymore
 #define PRINT_EULER_DATA 1
 
 #include "imu.h"
 
+////Not yet implemented
 int current_deg = 0;
 
+////this is not used. It was supposed to try to change the movement speed based offf of the battery level of the robot
 static double POWER_OFFSET = 1;
+
+////uart input. some functions may use this, but this is replaced with getChar()
 extern volatile char data_received;
 extern volatile char data_received_flag;
 
+////get and print orientation values
 void print_euler() {
 /*    signed short orientation[3];
     get_orientation(orientation);
@@ -29,17 +35,17 @@ void print_euler() {
     botprintf("%d\n\r",(int)(data/16));
 
 }
+////not yet implmented. Supposed to keep constant track of orientation
 unsigned short angleTurned(unsigned int * totalTraveled) {
     static unsigned short lastval;
 
 }
 
-int accelToVel(signed short acc[3]) {
-    signed short vel[3];
 
 
-}
 #define ACC_MAX_BUFF 5
+////not yet used, averages acceleration with ACC_MAX_BUFF values. Need to call updateAcc as often as possible to
+//// units: m/s^2
 int updateAcc(signed short accbuff[ACC_MAX_BUFF][3], signed short avgAcc[3]) {
     int i =0;
     int j;
@@ -58,20 +64,36 @@ int updateAcc(signed short accbuff[ACC_MAX_BUFF][3], signed short avgAcc[3]) {
 
 
 }
+/*
+ *Takes the acceleration uses v=a*t equation
+ *gives us our current speed in meters per second
+ */
 int updateVel(signed short vel[3],signed short avgAcc[3], int nMilli) {
     int i =0;
     for (i=0;i<(3);i++) {
+        vel[i]=(avgAcc[i]*nMilli*.001);
 
 
     }
     return 0;
 }
+/*diplay our velocity not implemented
+ *
+ */
 int print_vel(){
     signed short vel[3];
                     //getVel(vel);
                     botprintf("%d,%d,%d\n\r",vel[0],vel[1],vel[2]);
 
 }
+/*
+ * Moves the robot 90 degrees, to the right?
+ * i can't remember which direction it goes.
+ * uses imu to check orientation.
+ * when we get to 90 degrees, it stops wheels. And then starts wheels slowly in opposite direction
+ * it stops when it gets to 90+offset
+ * this acocunts for the time it takes to stop the wheels
+ */
 void rotate_90_degrees( oi_t * sensor) {
     unsigned short curRot;
     get_rotation(&curRot);
@@ -121,14 +143,19 @@ void rotate_90_degrees( oi_t * sensor) {
 
 
 }
-/*
- *   unsigned int stoptime = timer_getMicros();
-    oi_setWheels(0, 0);
-    stoptime = timer_getMicros() - stoptime;
-        botprintf("time to send stop: %d\n\r",stoptime);
 
+/*
+ *
  */
-#define IMU_360 5760
+
+#define IMU_360 5760 ///The IMU increments the degrees by 12 or something. The orientation is a short
+                        //// this value is the conversion from 360 degrees to the IMU's 360 degrees
+
+/*
+ * The same as the Rotate_90_Degrees above, but can take any degree and any direction
+ * the rotation must be able to poll the imu frequently enough to detect the changes in rotation
+ * otherwise it may miss the target point and loop back around
+ */
 void rotateDegrees( oi_t * sensor, signed short signedDeg) {
     signedDeg*=-1; ///I made the function backwards
     unsigned short uDeg = abs(signedDeg);
@@ -152,7 +179,8 @@ void rotateDegrees( oi_t * sensor, signed short signedDeg) {
 
     botprintf("curr: %u, target: %u \n\r",curRot,targetAngle);
 
-   //while (!((targetAngle-threshold)<curRot) &&  ((targetAngle+threshold)>curRot)){
+   //while the difference between our target angle and current angle is larger than our threshold, which is about .5 a degree
+    ////// if the threshold is too small, the bot may miss the threshold and then go back around
     while (abs(curRot-targetAngle)>threshold){
     get_rotation(&curRot);
    // oi_quick_update(sensor);
@@ -162,12 +190,16 @@ void rotateDegrees( oi_t * sensor, signed short signedDeg) {
 
     }
     oi_setWheels(0, 0);
-    //oi_setWheels(10,-10);
+
+    /// stop the bot and then
+    /// update sensors to see how far off we are
+
     timer_waitMillis(100);
     oi_update(sensor);
 
     get_rotation(&curRot);
 
+    //// go back opposite direction slowly until we get to the target with an offset within .3ish of a degree
     if (abs(curRot-targetAngle)>5) {
         if (!sign) {
         oi_setWheels(20,-20);
@@ -202,7 +234,9 @@ void rotateDegrees( oi_t * sensor, signed short signedDeg) {
 
 
 }
-
+/*
+ *never used, but calculates a trajectory and then moves accordingly
+ */
 void move_around_obstacle(oi_t *sensor, char leftBumper, char rightBumper);
 
 //Added defines for turnrobot_degrees function
@@ -214,9 +248,13 @@ void move_around_obstacle(oi_t *sensor, char leftBumper, char rightBumper);
 
 ///moved this here because an global variable cannot be declared more than once
 ///in other places it has to be declared as "extern int FieldEdgeFound;"
+/*
+ *///// this is the flag that sets off whether or not we have located the white tape
+ *
+ */
 int FieldEdgeFound;
 
-
+////these are never used, but supposed to keep track of bots location and orientation
 float _botx=0;
 float _boty=0;
 int  _botdeg=90;
@@ -224,19 +262,31 @@ int  _botdeg=90;
 
 
 #define INTDEGTORAD(a) ((((double)(a))*(2*M_PI))/360.0)
+
+
+/*
+ * updates the global variables for current rotation
+ * not implemented
+ */
 int update_rotation_data(int deg) {
 _botdeg+=(deg % 360);
 _botdeg=(_botdeg%360);
 return 0;
 }
 
-
+/*
+ * updates the global variables for current gridspace location
+ * not implemented
+ */
 int update_move_data(int dist) {
 _botx+=cos(INTDEGTORAD(_botdeg))*dist;
 _boty+=sin(INTDEGTORAD(_botdeg))*dist;
 }
 
-
+/*
+ * no longer used, but it works. This sets the motor calibration values that are from open_interface.h
+ *  this is not useful because the bot is very irregular in the amount of power the wheels recieve or something, so sometimes a wheel gets too much and sometimes too little power
+ */
 int configure_wheels(oi_t *sensor) {
     char  ch =  getChar();
     oi_setMotorCalibration(.96,oi_getMotorCalibrationRight());
@@ -267,7 +317,10 @@ int configure_wheels(oi_t *sensor) {
 
 }
 
-
+/*
+ * check oi sensors to see if there is a cliff
+ * if you don't call oi_update somewhere else, this may not be accurate
+ */
 
 int detect_cliff(oi_t * sensor) {
     int return_value=0;
@@ -290,7 +343,9 @@ int detect_cliff(oi_t * sensor) {
 
 }
 
-
+/*
+ * our old turn robot degrees_to_turn degrees function. It works, but does not use IMU
+ */
 void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
 {
 
@@ -345,6 +400,9 @@ void turn_robot_degrees(oi_t *sensor, int degrees_to_turn)
     oi_setWheels(0, 0);
 
 }
+/*
+ * not implemented, for autonomous mode. It finds the corner of the field.
+ */
 void FindStartPostition(oi_t* sensor)
 {
     //Poke around to find an nearby edge of the playing field
@@ -374,7 +432,10 @@ void FindStartPostition(oi_t* sensor)
     move_specific_distance(sensor, -10);
     turn_robot_degrees(sensor, -90);
 }
-
+/*
+ * checks if there is a white tape line and then stops the robot
+ * also sets the FieldEdgeFound global variable
+ */
 int StopOnLine(oi_t* sensor)
 {
     if(sensor->cliffFrontLeftSignal >= 2700 ||
@@ -386,7 +447,10 @@ int StopOnLine(oi_t* sensor)
     }
     return 0;
 }
-
+/*
+ * handler for detecting a cliff. For now, it just stops the wheels. For autonomous, not implemented, this may also back up, but probably not
+ * returns which cliff sensors go off,
+ */
 //returns y displacement from goal
 unsigned int on_detect_cliff(oi_t * sensor,  move_data * bot_move_data, int which_cliff){
     if (which_cliff==0) {
@@ -397,7 +461,10 @@ unsigned int on_detect_cliff(oi_t * sensor,  move_data * bot_move_data, int whic
     return 0;
 }
 
-
+/*
+ * not implemented. for autonomous mode.
+ * depending on the cliff sensors that go off, it will attempt to back up and adjust trajectory
+ */
 ///returns y displacement from goal
 int move_around_cliff (oi_t * sensor, move_data * bot_move_data, int which_cliff) {
     int how_far_to_back_off_from_cliff = 7;
@@ -476,6 +543,10 @@ int move_around_cliff (oi_t * sensor, move_data * bot_move_data, int which_cliff
 
 
 }
+
+/*
+ * this is used for IMU. This takes the current rotation and the last polled rotation and determines whether the bot is rotating to the right or the left
+ */
 int determineDirection(unsigned short cur, unsigned short last) {
     int direction = 0;
     if ((last>5000) && ( cur < 100)) {
@@ -493,10 +564,12 @@ int determineDirection(unsigned short cur, unsigned short last) {
     return direction;
 }
 
-/////this one is used by user
+//
+/*///this one is used by user
 ///it calls move_distance after instantiating a bot_data with the target y value
-/*
- * i don't
+ * It does not check sensors so do not back up in traveres spaces
+ *  uses imu to adjust wheels as it veers off path
+ *  Speed of bot is based off of how far we are trying to go
  */
 ////
 void move_specific_distance(oi_t *sensor, int cm) {
@@ -506,22 +579,29 @@ void move_specific_distance(oi_t *sensor, int cm) {
     unsigned short angleDiff=0;
     unsigned short lastRot=curRot;
     unsigned short degreeDifTol=8;
-    int distance_offset = 3;
+    double distance_offset =1.063829787; //millimeters. we move 3 extra cm when we want to go 50  cm
     int adjustMode=0;
        int ticksTurned =0;
 
     move_data bot_move_data = {0,0,0,cm};
-    int SPEED = 200;
+    int SPEED =200;
+    if (cm<10) {
+        SPEED = 20;
+    }
+    else if (cm<20) {
+        SPEED = 50;
+    }
     double distance_traveled = 0;
     signed char direction = 1;
     if (cm < 0)
     {
         direction = -1;
         cm *= direction;
+        //distance_offset*=-1;
     }
     timer_init();
     oi_setWheels(SPEED * direction, SPEED * direction*WHEEL_OFFSET); //rwheel, lwheel
-    while ((distance_traveled-distance_offset) < cm * 10)
+    while ((int)(distance_traveled *distance_offset ) <( cm * 10))
     {
         get_rotation(&curRot);
                angleDiff = ((abs(curRot-startRot)%IMU_360_DEG));
@@ -531,7 +611,7 @@ void move_specific_distance(oi_t *sensor, int cm) {
                if ((curDir==1) && (adjustMode!=1) && !((ticksTurned<2) && (curDir==-1)) ){
 
                    adjustMode=1;
-                   botprintf("wer'e veering to the right\n\r");
+                //   botprintf("wer'e veering to the right\n\r");
                    oi_setWheels(SPEED * direction, SPEED * direction * WHEEL_OFFSET); //rwheel, lwheel
                    ticksTurned=0;
 
@@ -539,7 +619,7 @@ void move_specific_distance(oi_t *sensor, int cm) {
                else if ((curDir==-1)&& (adjustMode!=-1)&& !((ticksTurned<2) && (curDir==1))){
                    adjustMode=-1;
 
-                   botprintf("were veering to the left");
+                //   botprintf("were veering to the left");
                    oi_setWheels(SPEED * direction* WHEEL_OFFSET, SPEED * direction); //rwheel, lwheel
                    ticksTurned=0;
 
@@ -550,7 +630,7 @@ void move_specific_distance(oi_t *sensor, int cm) {
                }
 
 
-               botprintf("current rotation: %u, start_rotation: %u, angular displacement: %u, ticks turned: %u, direction: %d, adjustMode: %d\n\r",curRot,startRot,angleDiff,ticksTurned,curDir,adjustMode);
+             //  botprintf("current rotation: %u, start_rotation: %u, angular displacement: %u, ticks turned: %u, direction: %d, adjustMode: %d\n\r",curRot,startRot,angleDiff,ticksTurned,curDir,adjustMode);
 
                 if(StopOnLine(sensor))
                 {
@@ -563,7 +643,9 @@ void move_specific_distance(oi_t *sensor, int cm) {
     oi_setWheels(0, 0);
 }
 
-
+/*
+ * this is used to check our bump sensors before we start a forward move, preventing forward motion if were already bumping something or on a cliff
+ */
 int checkFlags(oi_t *sensor) {
     move_data bot_move_data = {0,0,0,0};
 
@@ -596,6 +678,7 @@ return returnflag;
  * these changes should not effect any code
  * if we moved more than 255 centimeters, this could be problematic
  * i do not using this for moving backwards
+ * uses imu to offset wheels to keep us moving straight
  */
 
 unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmTraveled)
@@ -606,7 +689,7 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmT
     if (firstcheck || FieldEdgeFound){
         return firstcheck;
     }
-    int distance_offset = 3; ///cm
+    double distance_offset = 1.063829787; ///cm
     unsigned short curRot;
     get_rotation(&curRot);
     unsigned short startRot = curRot;
@@ -616,8 +699,14 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmT
     int adjustMode=0;
        int ticksTurned =0;
 
-    move_data bot_move_data = {0,0,0,cm};
-    int SPEED = 200;
+    move_data bot_move_data = {0,0,0,cm}; ///not yet implmemented
+    int SPEED =200;
+        if (cm<10) {
+            SPEED = 20;
+        }
+        else if (cm<20) {
+            SPEED = 50;
+        }
 
     double distance_traveled = 0;
 
@@ -633,7 +722,7 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmT
     //while loop to travel the set distance
     unsigned char returnflag = 0;
 
-    while (distance_traveled < ((cm-(distance_offset)) * 10)) ///we should not have to multiply the number of centimeters by 10
+    while ((distance_traveled* 1.063829787) < ((cm-(distance_offset)) * 10)) ///we should not have to multiply the number of centimeters by 10
     {
         //print_vel();
 
@@ -708,6 +797,9 @@ unsigned int actually_move_until_detect_obstacle(oi_t *sensor, int cm, int * cmT
     return returnflag;
 }
 
+/*
+ * move around obstacles for autonomous not implemented
+ */
 
 const int backwards_amount = 0;
 const int horizontal_amount = 10;
@@ -783,6 +875,9 @@ void move_around_obstacles(oi_t *sensor, int centimeters)
     oi_setWheels(0, 0);
 
 }
+/*
+ * move around one obstacle for autonomous not implemented
+ */
 void move_around_obstacle(oi_t * sensor, char leftBumper, char rightBumper)
 {
     if (data_received_flag && data_received == 't')

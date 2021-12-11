@@ -9,16 +9,19 @@
 #ifndef MOVEMENT_H_
 #define MOVEMENT_H_
 
+///not used anymore
 #define MAGIC_DiSTANCE_IONCREASE 40
 #define MOVE_FORWARD oi_setWheels(200, 200)
 #define MOVE_BACKWARD oi_setWheels(-200, -200)
+///these are used
 #define TURN_LEFT oi_setWheels(100,-100)
 #define TURN_RIGHT oi_setWheels(-100, 100)
+//these are used
 #define HIT_LEFT_BUMPER 0x10
 #define HIT_RIGHT_BUMPER 0x20
 #define HIT_BOTH_BUMPER 0x30
 #define HIT_EITHER_BUMPER(i) ((HIT_BOTH_BUMPER | i)>0)
-
+//these are used
 #define CLIFFFRONTLEFT 0x1
 #define CLIFFLEFT 0x2
 #define CLIFFFRONTRIGHT 0x4
@@ -35,6 +38,7 @@
 ///imu conversions
 #define DEG_TO_SHORT(a) a*16
 
+///not yet implmented
 typedef struct movement_data{
     double x;
     double y;
