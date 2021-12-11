@@ -189,12 +189,20 @@ char objsFrmScns(scanned_obj *objarray)
 
         /// if we detect a close object. the ping is very accurate at close range.
         int detected_closeObject;
-        if ((all_scans[i].ping<MAX_PING_DISTANCE) && (all_scans[i+1].ping<MAX_PING_DISTANCE)) {
+        if ((all_scans[i].IR<MAX_PING_DISTANCE) && (all_scans[i+1].ping<MAX_PING_DISTANCE)) {
+            //first we go to the last instanct of the largest ping value of this object within our range
+
+            int min_ping=first_dist;
+
+
+  //      }
             detected_closeObject=1;
             first_angle = i;
             first_dist=current_scan.ping;
-            while ((current_scan.ping<MAX_PING_DISTANCE) && (i<179) && (abs(all_scans[i+1].ping-current_scan.ping)<MAX_RADIUS)) {
-                i++;
+        ///this is the normal one, it sort of works, but goes a little big
+            ///    while ((current_scan.ping<MAX_PING_DISTANCE) && (i<179) && (abs(all_scans[i+1].ping-current_scan.ping)<MAX_RADIUS)) {
+            while ((i<179) && (current_scan.ping<=min_ping)){
+            i++;
                 current_scan=all_scans[i];
             }
 
@@ -239,6 +247,10 @@ char objsFrmScns(scanned_obj *objarray)
             second_angle = i - deg_multiplier;
             second_dist=all_scans[i-deg_multiplier].IR;
 
+            ///thisssssssssssssssssssssssssssssssss use this
+            scanned_obj * theobject = &objarray[num_objs_list[direction]];
+
+
             // ---===Update Object Values===---
             objarray[num_objs_list[direction]].angle = first_angle;
             objarray[num_objs_list[direction]].angle2 = second_angle;
@@ -247,12 +259,14 @@ char objsFrmScns(scanned_obj *objarray)
 
                 //using ping for distance at middle of object
             Ping  ping;
-            if (nscans==180) {
-                objarray[num_objs_list[0]].distance =all_scans[(objarray[num_objs_list[direction]].radial_width)+first_angle].ping;
-            }
-            else {
-            objarray[num_objs_list[0]].distance = (float) SonarScan((objarray[num_objs_list[direction]].radial_width/2)+first_angle, &ping);
-            }
+
+            //if (nscans==180) {
+            int scan_index_for_distance = first_angle + (theobject->radial_width/2);
+                theobject->distance =(all_scans[scan_index_for_distance].ping);
+        //    }
+          //  else {
+            //objarray[num_objs_list[0]].distance = (float) SonarScan((objarray[num_objs_list[direction]].radial_width/2)+first_angle, &ping);
+            //}
             objarray[num_objs_list[direction]].straight_width = get_width(objarray[num_objs_list[0]].distance,  second_angle - first_angle);
                     ///lawOfCosines((float) second_dist, (float)first_dist, second_angle-first_angle); //get_width(
                  //   second_dist,
